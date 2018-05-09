@@ -46,6 +46,78 @@ class RG:
             if B in self.G[A]:
                     del self.G[A]
 
+    def validate_grammar(self):
+        for prod in self.G:
+            if not self.G[prod]:
+                return False
+        return True
+
+    def is_lower(self, B):
+        return B.islower()
+
+
+    def check_input(self, input):
+        return input in self.generate_sequences(len(input))
+
+    def generate_sequences(self, size):
+        state = self.initial_state
+        final_sequences = []
+        sequences = []
+        for seq in self.G[state]:
+            if self.is_lower(seq):
+                final_sequences.append(seq)
+            else:
+                sequences.append(seq)
+        #print "Final Sequences: " + str(final_sequences)
+        #print "Sequences: " + str(sequences)
+        size -= 1
+        while(size > 0):
+            size -= 1
+            #print "Sequences: " + str(sequences)
+            tmp_sequences = sequences[:]
+            for seq in tmp_sequences:
+                for new_seq in self.G[seq[-1]]:
+                    new_seq = seq[0:-1] + new_seq
+                    if self.is_lower(new_seq):
+                        final_sequences.append(new_seq)
+                    else:
+                        sequences.append(new_seq)
+        return final_sequences
+
+    def check_input_optimized(self, input):
+        size = len(input)
+        state = self.initial_state
+        final_sequences = []
+        sequences = []
+        for seq in self.G[state]:
+            if self.is_lower(seq):
+                if (len(seq) == len(input)):
+                    final_sequences.append(seq)
+            elif (seq[0] == input[0]):
+                sequences.append(seq)
+        #print "Final Sequences: " + str(final_sequences)
+        #print "Sequences[2]: " + str(sequences)
+        size -= 1
+        i = 1
+        while(size > 0):
+            size -= 1
+            #print "Sequences: " + str(sequences)
+            tmp_sequences = sequences[:]
+            sequences = []
+            for seq in tmp_sequences:
+                for new_seq in self.G[seq[-1]]:
+                    new_seq = seq[0:-1] + new_seq
+                    if self.is_lower(new_seq):
+                        if (len(new_seq) == len(input)):
+                            final_sequences.append(new_seq)
+                    elif (new_seq[i] == input[i]):
+                        sequences.append(new_seq)
+            i += 1
+            #print "Sequences["+str(i+1)+"]: " + str(sequences)
+        return (input in final_sequences)
+
+
+
 
 
     # Prints the Grammar
