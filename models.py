@@ -116,10 +116,6 @@ class RG:
             #print "Sequences["+str(i+1)+"]: " + str(sequences)
         return (input in final_sequences)
 
-
-
-
-
     # Prints the Grammar
     def show(self):
         print self.G
