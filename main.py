@@ -2,7 +2,7 @@
 from tkinter import *
 import tkinter.messagebox
 from models import RG
-import os
+import os, pprint, copy
 import pickle
 
 if os.path.isfile("reg_grammar.p"):
@@ -15,13 +15,20 @@ else:
 
 def get_formatted_production(g):
     lines = "G: P = {\n"
+    rules = ""
+    for rule in g.G[g.initial_state]:
+        rules += str(rule) + " | "
+    rules = rules[0:-3]
+    lines += (str(g.initial_state) + " --> " + rules + "\n")
     for production in g.G.keys():
-        rules = ""
-        for rule in g.G[production]:
-            rules += str(rule) + " | "
-        rules = rules[0:-3]
-        lines += (str(production) + " --> " + rules + "\n")
+        if production != g.initial_state:
+            rules = ""
+            for rule in g.G[production]:
+                rules += str(rule) + " | "
+            rules = rules[0:-3]
+            lines += (str(production) + " --> " + rules + "\n")
     lines += "}"
+
     return lines
 
 def gui_addRule():
@@ -46,12 +53,15 @@ def gui_checkInput():
 
 def gui_saveGrammar():
     filename = filenameEntry.get()
+    print "Save Grammar: " + str(filename)
     all_reg_grammars[filename] = g.G
     pickle.dump(all_reg_grammars, open( "reg_grammar.p", "wb" ))
 
 def gui_loadGrammar():
     filename = filenameEntry.get()
-    g.G = all_reg_grammars[filename]
+    print "Load Grammar: " + str(filename)
+    g.G = copy.deepcopy(all_reg_grammars[filename])
+    pprint.pprint(g.G)
     name = get_formatted_production(g)
     labelText.set(name)
 
@@ -70,7 +80,7 @@ while True:
     if option == "9":
         break
     if option == "2":
-        print all_reg_grammars
+        pprint.pprint(all_reg_grammars)
         raw_input("\nAperte para continuar...")
     if option == "1":
         g = RG()
@@ -115,7 +125,7 @@ while True:
         Label(app, text="Test input", height=1, font=("Helvetica", 24)).pack()
         #Label(app, text="Production Right Side", height=2, font=("Helvetica", 18)).pack()
         labelCheckInput = StringVar()
-        label3 = Label(app, textvariable=labelCheckInput, height=2, font=("Helvetica", 14))
+        label3 = Label(app, textvariable=labelCheckInput, height=1, font=("Helvetica", 14))
         label3.pack()
         Label(app, text="Input", height=1, font=("Helvetica", 12)).pack()
         input = StringVar(None)
