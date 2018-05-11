@@ -1,7 +1,7 @@
 #!/usr/bin/env python # -*- coding: utf-8 -*
 from tkinter import *
 import tkinter.messagebox
-from models import RG
+from models import RegGram, Regex
 import os, pprint, copy
 import pickle
 
@@ -83,7 +83,7 @@ while True:
         pprint.pprint(all_reg_grammars)
         raw_input("\nAperte para continuar...")
     if option == "1":
-        g = RG()
+        g = RegGram()
         app = Tk()
         app.title("RegLangs")
         app.geometry('500x800+200+200')
@@ -135,3 +135,11 @@ while True:
         button2 = Button(app, text="TEST", width=20, command=gui_checkInput)
         button2.pack(side='top', padx=15,pady=15)
         app.mainloop()
+
+
+
+    # Regex
+    if option == "3":
+        regex = Regex()
+        regex.set_regex("abbba(abbba(cbcb))")
+        print regex.E
