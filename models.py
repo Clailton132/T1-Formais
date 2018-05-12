@@ -1,11 +1,16 @@
 class RegGram:
-    def  __init__(self, initial_state='S'):
+    def  __init__(self):
         self.G = {}
+        self.initial_state = None
+
+
+    def set_initial_state(self, initial_state):
         self.initial_state = initial_state
-        self.G[initial_state] = []
 
     # Productions A -> B
     def add_production(self, A):
+        if not self.G:
+            self.initial_state = A
         if not self.G.has_key(A):
             if self.validate_production(A):
                 self.G[A] = []
@@ -44,7 +49,7 @@ class RegGram:
     def remove_rule(self, A, B):
         if self.G.has_key(A):
             if B in self.G[A]:
-                    del self.G[A]
+                self.G[A].remove(B)
 
     def validate_grammar(self):
         for prod in self.G:
@@ -89,6 +94,7 @@ class RegGram:
         state = self.initial_state
         final_sentences = []
         sentences = []
+        print self.initial_state
         for seq in self.G[state]:
             if self.is_lower(seq):
                 if (len(seq) == len(input)):
@@ -121,7 +127,6 @@ class RegGram:
         print self.G
 
 
-
 class Regex:
     def  __init__(self):
         self.E = []
@@ -129,11 +134,19 @@ class Regex:
     def set_regex(self, input):
         self.E = []
         context = []
-        size = len(input)
-        c = 0 # context level
+        k = 0
+        context = [[]]
+        c = context[0]
         for i, char in enumerate(input):
-            if char == "(":
-                pass
-            if char == ")":
-                pass
-            
+            if char == '(':
+                context.append([])
+                k += 1
+                c = context[k]
+            elif char == ')':
+                context[k-1].append(context[k])
+                del context[k]
+                k -= 1
+                c = context[k]
+            else:
+                c.append(char)
+        self.E = context
