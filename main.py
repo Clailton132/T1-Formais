@@ -13,6 +13,13 @@ else:
     all_reg_grammars = {}
     #print "File does not exist"
 
+if os.path.isfile("regex.p"):
+    all_regex = pickle.load( open( "regex.p", "rb" ) )
+    print all_regex
+else:
+    all_regex = {}
+
+
 
 def get_formatted_production(g):
     lines = ""
@@ -71,12 +78,14 @@ def gui_checkInput():
             messagebox.showerror("Testing input", text)
 
     labelCheckInput.set(text)
+    return
 
 def gui_saveGrammar():
     filename = filenameEntry.get()
     print "Save Grammar: " + str(filename)
     all_reg_grammars[filename] = [g.initial_state, g.G]
     pickle.dump(all_reg_grammars, open( "reg_grammar.p", "wb" ))
+    return
 
 def gui_loadGrammar():
     filename = filenameEntry.get()
@@ -87,8 +96,33 @@ def gui_loadGrammar():
     pprint.pprint(g.G)
     name = get_formatted_production(g)
     labelText.set(name)
+    return
 
+def gui_setRegex():
+    regex = newEntry.get()
+    e.set_regex(regex)
+    labelText.set("RE: " + str(regex)+"\n"+str(e.E))
+    newEntry.delete(0, END)
+    #newEntry.insert(0, 'Default text after button click')
+    return
 
+def gui_saveRegex():
+    filename = filenameEntry.get()
+    print "Save Regex: " + str(filename)
+    all_regex[filename] = [e.literal, e.E]
+    pickle.dump(all_regex, open( "regex.p", "wb" ))
+    return
+
+def gui_loadRegex():
+    filename = filenameEntry.get()
+    print "Load Regex: " + str(filename)
+    backup = copy.deepcopy(all_regex[filename])
+    e.literal = backup[0]
+    e.E = backup[1]
+    pprint.pprint(e.E)
+    name = "RE: " +str(e.literal) + "\n" + str(e.E)
+    labelText.set(name)
+    return
 
 while True:
     os.system('clear')
@@ -164,10 +198,49 @@ while True:
 
     # Regex
     if option == "3":
-        regex = Regex()
+        e = Regex()
+        app = Tk()
+        app.title("RegLangs")
+        app.geometry('500x800+200+200')
+
+        Label(app, text="Save / Load Regex", height=1, font=("Helvetica", 16)).pack(side='top')
+        filename = StringVar(None)
+        filenameEntry = Entry(app, textvariable=filename)
+        filenameEntry.insert(0,"filename")
+        filenameEntry.pack(side='top')
+        buttonSave = Button(app, text="Save Regex", width=20, command=gui_saveRegex)
+        buttonSave.pack(side='top', padx=15)
+        buttonLoad = Button(app, text="Load Regex", width=20, command=gui_loadRegex)
+        buttonLoad.pack(side='top', padx=15, pady=(0, 30))
+
+
+        labelError = StringVar()
+        # labelError.set("SOME ERROR")
+        label0 = Label(app, textvariable=labelError, height=2)
+        label0.pack(padx=3)
+        Label(app, text="Regular Expression Application", height=1, font=("Helvetica", 28)).pack()
+        labelText = StringVar()
+        labelText.set("RE: ")
+        label1 = Label(app, textvariable=labelText, height=10, font=("Helvetica", 16), borderwidth=2, relief="groove", padx=60,pady=15)
+        label1.pack()
+
+        Label(app, text="Regular expression:", height=1, font=("Helvetica", 16)).pack()
+        A = StringVar(None)
+        newEntry = Entry(app, textvariable=A)
+        newEntry.insert(0,"")
+        newEntry.pack()
+
+        buttonAdd = Button(app, text="Set regex", width=20, command=gui_setRegex)
+        buttonAdd.pack(side='top', padx=15)
+
+
+        app.mainloop()
+
+        """regex = Regex()
         test = raw_input("Enter regex: ")
         regex.set_regex(test)
         #test = "((ab|ba)?)*"
         print test
         print regex.E
         raw_input("\nAperte para continuar...")
+        """

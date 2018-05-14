@@ -130,11 +130,13 @@ class RegGram:
 
 class Regex:
     def  __init__(self):
+        self.literal = ""
         self.E = []
 
     def set_regex(self, input):
+        self.literal = input
+        input = "("+input+")"
         self.E = []
-        context = []
         k = 0
         context = [[]]
         c = context[0]
@@ -171,4 +173,4 @@ class Regex:
                 pass
             else:
                 c.append(char)
-        self.E = context
+        self.E = context[0][0]
