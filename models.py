@@ -16,19 +16,20 @@ class RegGram:
                 self.G[A] = []
                 return True
             else:
-                print str(A) + " --> is not a valid production, it must be \
-                            a Vn (uppercase char) and have length 1. Ex: A"
-                return False
+                return str(A) + " --> is not a valid production for Regular Grammars"
         return True
 
     # Rules B on A -> B
     def add_rule(self, A, B):
-        if self.add_production(A):
+        if self.add_production(A) == True:
             if B not in self.G[A]:
                 if self.validate_rule(B):
                     self.G[A].append(B)
+                    return True
                 else:
-                    print "(" +str(B) + ") --> is not a valid production,\nit must be either a Vt (a lower char or digit and have length 1) or a Vt + Vn (a lower char followed by a upper char): Ex: a, aA"
+                    return " --> " +str(B) + " is not a valid production for Regular Grammars"
+        else:
+            return self.add_production(A)
 
     def validate_production(self, A):
         return ((len(A) == 1) and (A[0].isupper()))
@@ -143,10 +144,31 @@ class Regex:
                 k += 1
                 c = context[k]
             elif char == ')':
-                context[k-1].append(context[k])
+                tmp = context[k]
+                if "|" in tmp:
+                    alternation = {"|": []}
+                    aux = 0
+                    size = len(tmp)
+                    for j, item in enumerate(tmp):
+                        if item == "|":
+                            alternation["|"].append(tmp[aux: j])
+                            aux = j + 1
+                        if (j == size-1):
+                            alternation["|"].append(tmp[aux:])
+                    tmp = alternation
+                context[k-1].append(tmp)
                 del context[k]
                 k -= 1
                 c = context[k]
+            elif char in ("*", "?", "+"):
+                if i > 0:
+                    tmp = c[-1]
+                    del c[-1]
+                    c.append({char: tmp})
+            elif char == "|":
+                c.append("|")
+            elif char == " ":
+                pass
             else:
                 c.append(char)
         self.E = context

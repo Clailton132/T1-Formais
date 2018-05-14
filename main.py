@@ -37,9 +37,15 @@ def get_formatted_production(g):
 def gui_addRule():
     a = newEntry.get()
     b = newEntry2.get()
-    g.add_rule(a,b)
-    name = get_formatted_production(g)
-    labelText.set(name)
+    aux = g.add_rule(a,b)
+    if aux == True:
+        g.add_rule(a,b)
+        name = get_formatted_production(g)
+        labelText.set(name)
+    else:
+        name = aux
+        labelError.set(name)
+
     newEntry2.delete(0, END)
     #newEntry.insert(0, 'Default text after button click')
     return
@@ -107,8 +113,8 @@ while True:
 
         labelError = StringVar()
         # labelError.set("SOME ERROR")
-        label0 = Label(app, textvariable=labelError, height=1)
-        label0.pack()
+        label0 = Label(app, textvariable=labelError, height=2)
+        label0.pack(padx=3)
         Label(app, text="Regular Grammar Application", height=1, font=("Helvetica", 28)).pack()
         labelText = StringVar()
         labelText.set("G: P = ")
@@ -159,6 +165,9 @@ while True:
     # Regex
     if option == "3":
         regex = Regex()
-        regex.set_regex("ab(ccc)bba(ab(bbb*aaa)bba)")
+        test = raw_input("Enter regex: ")
+        regex.set_regex(test)
+        #test = "((ab|ba)?)*"
+        print test
         print regex.E
-9
+        raw_input("\nAperte para continuar...")
