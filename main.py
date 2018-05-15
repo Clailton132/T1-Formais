@@ -52,6 +52,7 @@ def gui_addRule():
     else:
         name = aux
         labelError.set(name)
+        messagebox.showinfo("Error", name)
 
     newEntry2.delete(0, END)
     #newEntry.insert(0, 'Default text after button click')

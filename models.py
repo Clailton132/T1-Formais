@@ -7,6 +7,10 @@ class RegGram:
     def set_initial_state(self, initial_state):
         self.initial_state = initial_state
 
+    def is_initial_state(self, state):
+        return state == self.initial_state
+
+
     # Productions A -> B
     def add_production(self, A):
         if not self.G:
@@ -24,8 +28,22 @@ class RegGram:
         if self.add_production(A) == True:
             if B not in self.G[A]:
                 if self.validate_rule(B):
-                    self.G[A].append(B)
-                    return True
+                    if self.validate_epsilon(B):
+                        self.G[A].append(B)
+                        return True
+                    else:
+                        return "The initial state can't be assigned on the right side of the production because its production has epsilon(&)"
+                elif B == "&":
+                    if self.is_initial_state(A):
+                        if not self.has_initial_state_on_right_side():
+                            self.G[A].append(B)
+                            return True
+                        else:
+                            return "& cant be assigned because the initial state is on a right side production"
+
+                    else:
+                        return "& can only be assigned to the initial state"
+
                 else:
                     return " --> " +str(B) + " is not a valid production for Regular Grammars"
         else:
@@ -40,6 +58,21 @@ class RegGram:
         elif (len(B) == 2) and (B[0].islower() or B[0].isdigit()) and (B[1].isupper()):
             self.add_production(B[1])
             return True
+        return False
+
+    def validate_epsilon(self, B):
+        if len(B) > 1:
+            if B[1] == self.initial_state:
+                if "&" in self.G[self.initial_state]:
+                    return False
+        return True
+
+    def has_initial_state_on_right_side(self):
+        for production in self.G:
+            for B in self.G[production]:
+                if len(B) > 1:
+                    if B[1] == self.initial_state:
+                        return True
         return False
 
 
@@ -174,3 +207,12 @@ class Regex:
             else:
                 c.append(char)
         self.E = context[0][0]
+
+
+
+class FiniteAutomata:
+    def  __init__(self):
+        self.G = {}
+        self.initial_state = None
+        self.final_states = None
+        self.states = {}
