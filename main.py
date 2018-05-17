@@ -1,7 +1,7 @@
 #!/usr/bin/env python # -*- coding: utf-8 -*
 from tkinter import *
 import tkinter.messagebox as messagebox
-from models import RegGram, Regex
+from models import RegGram, Regex, FiniteAutomata
 import os, pprint, copy
 import pickle
 
@@ -133,6 +133,7 @@ while True:
     print "* [1] Criar Gramática Regular"
     print "* [2] Listar Gramáticas Salvas"
     print "* [3] Criar Expressão Regular"
+    print "* [4] Teste Autômatos"
     print "* [9] Sair"
     option = raw_input("\nOpção: ")
     if option == "9":
@@ -140,7 +141,7 @@ while True:
     if option == "2":
         pprint.pprint(all_reg_grammars)
         raw_input("\nAperte para continuar...")
-    if option == "1":
+    elif option == "1":
         g = RegGram()
         app = Tk()
         app.title("RegLangs")
@@ -198,7 +199,7 @@ while True:
         app.mainloop()
 
     # Regex
-    if option == "3":
+    elif option == "3":
         e = Regex()
         app = Tk()
         app.title("RegLangs")
@@ -237,11 +238,15 @@ while True:
 
         app.mainloop()
 
-        """regex = Regex()
-        test = raw_input("Enter regex: ")
-        regex.set_regex(test)
-        #test = "((ab|ba)?)*"
-        print test
-        print regex.E
-        raw_input("\nAperte para continuar...")
-        """
+
+    elif option == "4":
+        fa = FiniteAutomata(
+                            {
+                                 "q0": {"a": "q1", "b": "q2", "c": "q0"},
+                                 "q1": {"a": "q1", "b": "q0"},
+                                 "q2": {"a": "q2", "c": "q0"}
+                             },
+                             "q0", #initial state
+                            ["q1", "q2"] # final states
+                            )
+        pretty = fa.pretty_print()

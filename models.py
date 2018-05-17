@@ -211,8 +211,49 @@ class Regex:
 
 
 class FiniteAutomata:
-    def  __init__(self):
-        self.G = {}
-        self.initial_state = None
-        self.final_states = None
-        self.states = {}
+    def  __init__(self, states={}, initial_state=None, final_states=[]):
+        self.states = states
+        self.initial_state = initial_state
+        self.final_states = final_states
+
+    def pretty_print(self):
+        descript = []
+        descript.append("   s   | ")
+        hr = "----------"
+        symbols = []
+        for state in self.states.values():
+            for symbol in state.keys():
+                if symbol not in symbols:
+                    symbols.append(symbol)
+                    descript[0] += " "+ symbol + "  | "
+                    hr += "-----"
+
+        str_final = " "
+        if self.initial_state in self.final_states:
+            str_final = "*"
+        descript.append(str_final + "->" + self.initial_state + "  | ")
+        for symbol in symbols:
+            descript[1] += " " + self.states[self.initial_state][symbol] + " | "
+
+        i = 2
+        for state in self.states:
+            if state != self.initial_state:
+                str_final = "   "
+                if state in self.final_states:
+                    str_final = " * "
+                descript.append(str_final + state + "  | ")
+                for symbol in symbols:
+                    if symbol in self.states[state]:
+                        descript[i] += " " + self.states[state][symbol] + " | "
+                    else:
+                        descript[i] += " " + "--" + " | "
+                i += 1
+
+
+        pretty = descript[0]+"\n"+hr+"\n"
+        for line in descript[1:]:
+            pretty += line + "\n"
+
+        print pretty
+        x = raw_input("\n\n...")
+        return pretty
