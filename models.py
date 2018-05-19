@@ -137,13 +137,10 @@ class RegGram:
                     final_sentences.append(seq)
             elif (seq[0] == input[0]):
                 sentences.append(seq)
-        #print "Final sentences: " + str(final_sentences)
-        #print "sentences[2]: " + str(sentences)
         size -= 1
         i = 1
         while(size > 0):
             size -= 1
-            #print "sentences: " + str(sentences)
             tmp_sentences = sentences[:]
             sentences = []
             for seq in tmp_sentences:
@@ -155,13 +152,15 @@ class RegGram:
                     elif (new_seq[i] == input[i]):
                         sentences.append(new_seq)
             i += 1
-            #print "sentences["+str(i+1)+"]: " + str(sentences)
         return (input in final_sentences)
 
     # Prints the Grammar
     def show(self):
         print self.G
 
+    """
+        Returns a Dict with terminal/non-terminal symbols
+    """
     def get_info(self):
         vn = [self.initial_state]
         vt = []
@@ -280,6 +279,7 @@ class FiniteAutomata:
         Prints the finite automata as a table to improve interpretability
     """
     def pretty_print(self):
+        print "Finite Automata:\n"
         bigger = self.get_max_column_size() * 5
         descript = []
         descript.append("       |")
@@ -288,7 +288,7 @@ class FiniteAutomata:
         for symbol in self.sigma:
             if symbol not in symbols:
                 symbols.append(symbol)
-                descript[0] += "   "+ str(symbol) + self.print_spaces(bigger-((1)*5)) + " |"
+                descript[0] += "   "+ str(symbol) + self.print_spaces(bigger - 5) + " |"
                 hr += "----------"
 
         str_final = " "
@@ -297,7 +297,7 @@ class FiniteAutomata:
         descript.append(str_final + "->" + str(self.initial_state) + "   |")
         for symbol in symbols:
             size = len(self.transitions[self.initial_state][symbol])
-            descript[1] += "" + str(self.transitions[self.initial_state][symbol]) + self.print_spaces(bigger-((size)*5))+ "|"
+            descript[1] += "" + str(self.transitions[self.initial_state][symbol]) + self.print_spaces(bigger - size * 5)+ "|"
 
         i = 2
         for state in self.transitions:
@@ -309,7 +309,7 @@ class FiniteAutomata:
                 for symbol in symbols:
                     if symbol in self.transitions[state]:
                         size = len(self.transitions[state][symbol])
-                        descript[i] += "" + str(self.transitions[state][symbol]) + self.print_spaces(bigger-((size)*5)) + "|"
+                        descript[i] += "" + str(self.transitions[state][symbol]) + self.print_spaces(bigger - size * 5) + "|"
                     else:
                         descript[i] += "" + "----" + " |"
                 i += 1

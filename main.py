@@ -240,6 +240,7 @@ while True:
 
 
     elif option == "4":
+        pprint.pprint(all_reg_grammars)
         gr_name = raw_input("Name of the Regular Grammar filename: ")
         my_rg = RegGram(all_reg_grammars[gr_name][1],all_reg_grammars[gr_name][0])
         print "Initial State: " + str(my_rg.initial_state)
