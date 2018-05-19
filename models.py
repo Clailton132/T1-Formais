@@ -215,9 +215,6 @@ class RegGram:
         fa.transitions[new_symbol] = {}
         for rule in fa.sigma:
             fa.transitions[new_symbol][rule] = [new_symbol]
-
-
-        fa.pretty_print()
         return fa
 
 
