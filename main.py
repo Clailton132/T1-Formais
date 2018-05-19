@@ -41,7 +41,7 @@ def get_formatted_production(g):
 
     return lines
 
-def gui_addRule():
+def gui_add_rule():
     a = newEntry.get()
     b = newEntry2.get()
     aux = g.add_rule(a,b)
@@ -58,7 +58,7 @@ def gui_addRule():
     #newEntry.insert(0, 'Default text after button click')
     return
 
-def gui_removeRule():
+def gui_remove_rule():
     a = newEntry.get()
     b = newEntry2.get()
     g.remove_rule(a,b)
@@ -67,7 +67,7 @@ def gui_removeRule():
     newEntry2.delete(0, END)
     return
 
-def gui_checkInput():
+def gui_check_input():
     input = newEntry3.get()
     text = "Your grammar G is not correct!"
     if(g.validate_grammar()):
@@ -81,14 +81,14 @@ def gui_checkInput():
     labelCheckInput.set(text)
     return
 
-def gui_saveGrammar():
+def gui_save_grammar():
     filename = filenameEntry.get()
     print "Save Grammar: " + str(filename)
     all_reg_grammars[filename] = [g.initial_state, g.G]
     pickle.dump(all_reg_grammars, open( "reg_grammar.p", "wb" ))
     return
 
-def gui_loadGrammar():
+def gui_load_grammar():
     filename = filenameEntry.get()
     print "Load Grammar: " + str(filename)
     backup = copy.deepcopy(all_reg_grammars[filename])
@@ -99,7 +99,7 @@ def gui_loadGrammar():
     labelText.set(name)
     return
 
-def gui_setRegex():
+def gui_set_regex():
     regex = newEntry.get()
     e.set_regex(regex)
     labelText.set("RE: " + str(regex)+"\n"+str(e.E))
@@ -107,14 +107,14 @@ def gui_setRegex():
     #newEntry.insert(0, 'Default text after button click')
     return
 
-def gui_saveRegex():
+def gui_save_regex():
     filename = filenameEntry.get()
     print "Save Regex: " + str(filename)
     all_regex[filename] = [e.literal, e.E]
     pickle.dump(all_regex, open( "regex.p", "wb" ))
     return
 
-def gui_loadRegex():
+def gui_load_regex():
     filename = filenameEntry.get()
     print "Load Regex: " + str(filename)
     backup = copy.deepcopy(all_regex[filename])
@@ -168,9 +168,9 @@ while True:
         newEntry2.insert(0,"")
         newEntry2.pack()
 
-        buttonAdd = Button(app, text="Add rule", width=20, command=gui_addRule)
+        buttonAdd = Button(app, text="Add rule", width=20, command=gui_add_rule)
         buttonAdd.pack(side='top', padx=15)
-        buttonRemove = Button(app, text="Remove rule", width=20, command=gui_removeRule)
+        buttonRemove = Button(app, text="Remove rule", width=20, command=gui_remove_rule)
         buttonRemove.pack(side='top', padx=15)
 
         #Label(app, text="Production Right Side", height=2, font=("Helvetica", 18)).pack()
@@ -182,13 +182,13 @@ while True:
         newEntry3 = Entry(app, textvariable=input)
         newEntry3.insert(0,"")
         newEntry3.pack()
-        button2 = Button(app, text="TEST", width=20, command=gui_checkInput)
+        button2 = Button(app, text="TEST", width=20, command=gui_check_input)
         button2.pack(side='top', padx=15,pady=15)
 
 
-        buttonLoad = Button(app, text="Load Grammar", width=20, command=gui_loadGrammar)
+        buttonLoad = Button(app, text="Load Grammar", width=20, command=gui_load_grammar)
         buttonLoad.pack(side='bottom', padx=15, pady=(0, 30))
-        buttonSave = Button(app, text="Save Grammar", width=20, command=gui_saveGrammar)
+        buttonSave = Button(app, text="Save Grammar", width=20, command=gui_save_grammar)
         buttonSave.pack(side='bottom', padx=15)
         filename = StringVar(None)
         filenameEntry = Entry(app, textvariable=filename)
@@ -210,9 +210,9 @@ while True:
         filenameEntry = Entry(app, textvariable=filename)
         filenameEntry.insert(0,"filename")
         filenameEntry.pack(side='top')
-        buttonSave = Button(app, text="Save Regex", width=20, command=gui_saveRegex)
+        buttonSave = Button(app, text="Save Regex", width=20, command=gui_save_regex)
         buttonSave.pack(side='top', padx=15)
-        buttonLoad = Button(app, text="Load Regex", width=20, command=gui_loadRegex)
+        buttonLoad = Button(app, text="Load Regex", width=20, command=gui_load_regex)
         buttonLoad.pack(side='top', padx=15, pady=(0, 30))
 
 
@@ -232,7 +232,7 @@ while True:
         newEntry.insert(0,"")
         newEntry.pack()
 
-        buttonAdd = Button(app, text="Set regex", width=20, command=gui_setRegex)
+        buttonAdd = Button(app, text="Set regex", width=20, command=gui_set_regex)
         buttonAdd.pack(side='top', padx=15)
 
 
@@ -240,13 +240,9 @@ while True:
 
 
     elif option == "4":
-        fa = FiniteAutomata(
-                            {
-                                 "q0": {"a": "q1", "b": "q2", "c": "q0"},
-                                 "q1": {"a": "q1", "b": "q0"},
-                                 "q2": {"a": "q2", "c": "q0"}
-                             },
-                             "q0", #initial state
-                            ["q1", "q2"] # final states
-                            )
-        pretty = fa.pretty_print()
+        my_rg = RegGram(all_reg_grammars["gr_test"][1],all_reg_grammars["gr_test"][0])
+        print "Initial State: " + str(my_rg.initial_state)
+        print my_rg.G
+        #print my_rg.get_vn()
+        fa = my_rg.get_eq_automata()
+        #pretty = fa.pretty_print()

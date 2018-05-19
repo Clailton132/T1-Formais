@@ -1,7 +1,9 @@
+from string import ascii_uppercase
+
 class RegGram:
-    def  __init__(self):
-        self.G = {}
-        self.initial_state = None
+    def  __init__(self, G={}, initial_state=None):
+        self.G = G
+        self.initial_state = initial_state
 
 
     def set_initial_state(self, initial_state):
@@ -160,6 +162,64 @@ class RegGram:
     def show(self):
         print self.G
 
+    def get_info(self):
+        vn = [self.initial_state]
+        vt = []
+        for state in self.G:
+            if state not in vn:
+                vn.append(state)
+            for rule in self.G[state]:
+                for char in rule:
+                    if char.islower() and (char not in vt):
+                        vt.append(char)
+        return {"vn": vn, "vt": vt}
+
+    def get_vn(self):
+        return self.get_info()["vn"]
+
+    def get_vt(self):
+        return self.get_info()["vt"]
+
+    """
+        Returns the equivalent finite automata
+    """
+    def get_eq_automata(self):
+        fa = FiniteAutomata()
+        new_symbol = None
+        for c in ascii_uppercase:
+            if c not in self.get_vn():
+                new_symbol = c
+                break
+        vn = self.get_vn()
+        vn.append(new_symbol)
+        fa.K = vn
+        fa.sigma = self.get_vt()
+        fa.initial_state = self.initial_state
+        fa.final_states.append(new_symbol)
+        if "&" in self.G[self.initial_state]:
+            fa.final_states.append(fa.initial_state)
+
+        for symbol in self.get_vn():
+            fa.transitions[symbol] = {}
+            for rule in self.get_vt():
+                if rule in self.G[symbol]:
+                    fa.transitions[symbol][rule] = [new_symbol]
+                else:
+                    fa.transitions[symbol][rule] = ["-"]
+            for rule in self.G[symbol]:
+                if len(rule) == 2:
+                    if fa.transitions[symbol][rule[0]] and fa.transitions[symbol][rule[0]] != ["-"]:
+                        fa.transitions[symbol][rule[0]].append(rule[1])
+                    else:
+                        fa.transitions[symbol][rule[0]] = [rule[1]]
+        fa.transitions[new_symbol] = {}
+        for rule in fa.sigma:
+            fa.transitions[new_symbol][rule] = [new_symbol]
+
+
+        fa.pretty_print()
+        return fa
+
 
 class Regex:
     def  __init__(self):
@@ -211,42 +271,50 @@ class Regex:
 
 
 class FiniteAutomata:
-    def  __init__(self, states={}, initial_state=None, final_states=[]):
-        self.states = states
+    def  __init__(self, K=[], sigma=[], transitions={}, initial_state=None, final_states=[]):
+        self.K = K
+        self.sigma = sigma
+        self.transitions = transitions
         self.initial_state = initial_state
         self.final_states = final_states
 
+
+    """
+        Prints the finite automata as a table to improve interpretability
+    """
     def pretty_print(self):
+        bigger = self.get_max_column_size() * 5
         descript = []
-        descript.append("   s   | ")
-        hr = "----------"
+        descript.append("       |")
+        hr = "-----------"
         symbols = []
-        for state in self.states.values():
-            for symbol in state.keys():
-                if symbol not in symbols:
-                    symbols.append(symbol)
-                    descript[0] += " "+ symbol + "  | "
-                    hr += "-----"
+        for symbol in self.sigma:
+            if symbol not in symbols:
+                symbols.append(symbol)
+                descript[0] += "   "+ str(symbol) + self.print_spaces(bigger-((1)*5)) + " |"
+                hr += "----------"
 
         str_final = " "
         if self.initial_state in self.final_states:
             str_final = "*"
-        descript.append(str_final + "->" + self.initial_state + "  | ")
+        descript.append(str_final + "->" + str(self.initial_state) + "   |")
         for symbol in symbols:
-            descript[1] += " " + self.states[self.initial_state][symbol] + " | "
+            size = len(self.transitions[self.initial_state][symbol])
+            descript[1] += "" + str(self.transitions[self.initial_state][symbol]) + self.print_spaces(bigger-((size)*5))+ "|"
 
         i = 2
-        for state in self.states:
+        for state in self.transitions:
             if state != self.initial_state:
                 str_final = "   "
                 if state in self.final_states:
                     str_final = " * "
-                descript.append(str_final + state + "  | ")
+                descript.append(str_final + state + "   |")
                 for symbol in symbols:
-                    if symbol in self.states[state]:
-                        descript[i] += " " + self.states[state][symbol] + " | "
+                    if symbol in self.transitions[state]:
+                        size = len(self.transitions[state][symbol])
+                        descript[i] += "" + str(self.transitions[state][symbol]) + self.print_spaces(bigger-((size)*5)) + "|"
                     else:
-                        descript[i] += " " + "--" + " | "
+                        descript[i] += "" + "----" + " |"
                 i += 1
 
 
@@ -257,3 +325,25 @@ class FiniteAutomata:
         print pretty
         x = raw_input("\n\n...")
         return pretty
+
+
+    """
+        Returns the size of the max column to improve pretty print
+    """
+    def get_max_column_size(self):
+        max = 0
+        for symbol in self.K:
+            for rule in self.transitions[symbol]:
+                size = len(self.transitions[symbol][rule])
+                if size > max:
+                    max = size
+        return max
+
+    """
+        Prints 'n' blank spaces
+    """
+    def print_spaces(self,n):
+        s = ""
+        for _ in range(n):
+            s += " "
+        return s
