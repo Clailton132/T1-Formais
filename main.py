@@ -250,8 +250,8 @@ while True:
         pretty = fa.pretty_print()
 
     elif option == "5":
-        test = 'gramatica_a_par'
-        # test = 'gr_test2'
+        # test = 'gramatica_a_par'
+        test = 'gr_main'
         rg = RegGram(all_reg_grammars[test][1],all_reg_grammars[test][0])
         rg.show()
         fa = rg.get_eq_automata()
@@ -259,6 +259,7 @@ while True:
 
         print "Deterministic: "
         dfa = fa.get_deterministic()
+        dfa.pretty_print()
 
         # TODO: fix get_eq_reg_gram() to deterministic fa version
         # new_rg = fa.get_eq_reg_gram()

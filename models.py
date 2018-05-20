@@ -270,6 +270,7 @@ class Regex:
 class FiniteAutomata:
     def  __init__(self):
         self.K = []
+        self.states = {} # To use when states were renamed
         self.sigma = []
         self.transitions = {}
         self.initial_state = None
@@ -291,21 +292,55 @@ class FiniteAutomata:
         print "dfa.K"
         print dfa.K
 
+        # Rename states
+        for i, state in enumerate(dfa.K):
+            dfa.states["q"+str(i)] = state
+
+        print "dfa.states"
+        print dfa.states
+
         # qo' = [qo]
-        dfa.initial_state = self.initial_state
+        dfa.initial_state = "q0"
 
         # F' = {p(K) | p(K) intersecction with F != empty state}
-        for state in dfa.K:
-            for s in state:
+        for state in dfa.states:
+            for s in dfa.states[state]:
                 if s in self.final_states:
                     dfa.final_states.append(state)
         print "dfa.final_states"
         print dfa.final_states
 
+        # transitions
+        new_states = None
+        while new_states != []:
+            new_states = []
+            for state in dfa.states:
+                dfa.transitions[state] = {}
+                for item in dfa.sigma:
+                    tmp = []
+                    for s in dfa.states[state]:
+                        for transition in self.transitions[s][item]:
+                            if transition not in tmp:
+                                tmp.append(transition)
+                                dfa.transitions[state][item] = tmp
+                    if (
+                        (dfa.transitions[state][item] not in dfa.K)
+                        and
+                        (dfa.transitions[state][item] not in new_states)
+                        ):
+                        new_states.append(dfa.transitions[state][item])
+            print "new_states"
+            print new_states
+
+            for state in new_states:
+                dfa.K.append(state)
+                new_state_name = "q"+str(len(dfa.states))
+                print "NEW STATE: " + new_state_name + ": " + str(state)
+                dfa.states[new_state_name] = state
 
         print "dfa.transitions"
         print dfa.transitions
-
+        dfa.K = dfa.states
         return dfa
 
     """
@@ -378,6 +413,7 @@ class FiniteAutomata:
         pretty = descript[0]+"\n"+hr+"\n"
         for line in descript[1:]:
             pretty += line + "\n"
+        pretty += hr
 
         print pretty
         x = raw_input("\n\n...")
