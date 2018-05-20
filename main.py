@@ -134,6 +134,7 @@ while True:
     print "* [2] Listar Gramáticas Salvas"
     print "* [3] Criar Expressão Regular"
     print "* [4] Conversão Gramática Regular -> Autômato Finito"
+    print "* [5] Conversão Autômato Finito -> Gramática Regular"
     print "* [9] Sair"
     option = raw_input("\nOpção: ")
     if option == "9":
@@ -247,3 +248,17 @@ while True:
         print my_rg.G
         fa = my_rg.get_eq_automata()
         pretty = fa.pretty_print()
+
+    elif option == "5":
+        test = 'gramatica_a_par'
+        # test = 'gr_test2'
+        rg = RegGram(all_reg_grammars[test][1],all_reg_grammars[test][0])
+        rg.show()
+        fa = rg.get_eq_automata()
+        fa.pretty_print()
+
+        dfa = fa.get_deterministic()
+
+        new_rg = fa.get_eq_reg_gram()
+        new_rg.show()
+        x = raw_input("...")

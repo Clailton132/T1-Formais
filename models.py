@@ -274,6 +274,40 @@ class FiniteAutomata:
         self.initial_state = initial_state
         self.final_states = final_states
 
+    """
+        Returns an deterministic version of the finite automata
+    """
+    def get_deterministic(self):
+        dfa = FiniteAutomata()
+        
+        pass
+
+    """
+        Returns an equivalent Regular Grammar
+    """
+    def get_eq_reg_gram(self):
+        rg = RegGram()
+        rg.initial_state = self.initial_state
+        state = self.initial_state
+        rg.G[state] = []
+        for key in self.transitions[state]:
+            for value in self.transitions[state][key]:
+                if value in self.final_states:
+                    rg.G[state].append(key)
+                else:
+                    rg.G[state].append(key+value)
+
+        for state in self.K:
+            rg.G[state] = []
+            for key in self.transitions[state]:
+                for value in self.transitions[state][key]:
+                    if value in self.final_states:
+                        rg.G[state].append(key)
+                    else:
+                        rg.G[state].append(key+value)
+        if self.initial_state in self.final_states:
+            rg.G[rg.initial_state].append("&")
+        return rg
 
     """
         Prints the finite automata as a table to improve interpretability
