@@ -137,7 +137,7 @@ while True:
     print "* [5] Conversão Autômato Finito -> Gramática Regular"
     print "* [9] Sair"
     option = raw_input("\nOpção: ")
-    if option == "9":
+    if option in ("9", ""):
         break
     if option == "2":
         pprint.pprint(all_reg_grammars)
@@ -257,8 +257,10 @@ while True:
         fa = rg.get_eq_automata()
         fa.pretty_print()
 
+        print "Deterministic: "
         dfa = fa.get_deterministic()
 
-        new_rg = fa.get_eq_reg_gram()
-        new_rg.show()
+        # TODO: fix get_eq_reg_gram() to deterministic fa version
+        # new_rg = fa.get_eq_reg_gram()
+        # new_rg.show()
         x = raw_input("...")

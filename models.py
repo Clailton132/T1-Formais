@@ -1,4 +1,5 @@
 from string import ascii_uppercase
+import copy
 
 class RegGram:
     def  __init__(self, G={}, initial_state=None):
@@ -267,20 +268,45 @@ class Regex:
 
 
 class FiniteAutomata:
-    def  __init__(self, K=[], sigma=[], transitions={}, initial_state=None, final_states=[]):
-        self.K = K
-        self.sigma = sigma
-        self.transitions = transitions
-        self.initial_state = initial_state
-        self.final_states = final_states
+    def  __init__(self):
+        self.K = []
+        self.sigma = []
+        self.transitions = {}
+        self.initial_state = None
+        self.final_states = []
 
     """
         Returns an deterministic version of the finite automata
     """
     def get_deterministic(self):
         dfa = FiniteAutomata()
-        
-        pass
+        dfa.sigma = self.sigma[:]
+        # K' = {p(k)}
+        dfa.K.append([self.initial_state])
+        for symbol in self.K:
+            for s in self.sigma:
+                state = self.transitions[symbol][s]
+                if state not in dfa.K:
+                    dfa.K.append(state)
+        print "dfa.K"
+        print dfa.K
+
+        # qo' = [qo]
+        dfa.initial_state = self.initial_state
+
+        # F' = {p(K) | p(K) intersecction with F != empty state}
+        for state in dfa.K:
+            for s in state:
+                if s in self.final_states:
+                    dfa.final_states.append(state)
+        print "dfa.final_states"
+        print dfa.final_states
+
+
+        print "dfa.transitions"
+        print dfa.transitions
+
+        return dfa
 
     """
         Returns an equivalent Regular Grammar
