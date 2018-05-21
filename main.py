@@ -251,17 +251,23 @@ while True:
 
     elif option == "5":
         # test = 'gramatica_a_par'
-        test = 'gr_main'
+        test = 'lista2_4a'
         rg = RegGram(all_reg_grammars[test][1],all_reg_grammars[test][0])
         rg.show()
         fa = rg.get_eq_automata()
         fa.pretty_print()
+        print "fa.transitions"
+        print fa.transitions
 
+        f = copy.copy(fa)
         print "Deterministic: "
-        dfa = fa.get_deterministic()
+        dfa = f.get_deterministic()
         dfa.pretty_print()
 
-        # TODO: fix get_eq_reg_gram() to deterministic fa version
-        # new_rg = fa.get_eq_reg_gram()
-        # new_rg.show()
+        new_rg = fa.get_eq_reg_gram()
+        new_rg.show()
+
+        dfa_new_rg = dfa.get_eq_reg_gram()
+        print "dfa_new_reg.show()"
+        dfa_new_rg.show()
         x = raw_input("...")
