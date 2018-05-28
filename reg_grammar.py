@@ -1,0 +1,217 @@
+from string import ascii_uppercase
+
+class RegGram:
+    def  __init__(self, G={}, initial_state=None):
+        self.G = G
+        self.initial_state = initial_state
+
+
+    def set_initial_state(self, initial_state):
+        self.initial_state = initial_state
+
+    def is_initial_state(self, state):
+        return state == self.initial_state
+
+
+    # Productions A -> B
+    def add_production(self, A):
+        if not self.G:
+            self.initial_state = A
+        if not self.G.has_key(A):
+            if self.validate_production(A):
+                self.G[A] = []
+                return True
+            else:
+                return str(A) + " --> is not a valid production for Regular Grammars"
+        return True
+
+    # Rules B on A -> B
+    def add_rule(self, A, B):
+        if self.add_production(A) == True:
+            if B not in self.G[A]:
+                if self.validate_rule(B):
+                    if self.validate_epsilon(B):
+                        self.G[A].append(B)
+                        return True
+                    else:
+                        return "The initial state can't be assigned on the right side of the production because its production has epsilon(&)"
+                elif B == "&":
+                    if self.is_initial_state(A):
+                        if not self.has_initial_state_on_right_side():
+                            self.G[A].append(B)
+                            return True
+                        else:
+                            return "& cant be assigned because the initial state is on a right side production"
+
+                    else:
+                        return "& can only be assigned to the initial state"
+
+                else:
+                    return " --> " +str(B) + " is not a valid production for Regular Grammars"
+        else:
+            return self.add_production(A)
+
+    def validate_production(self, A):
+        return ((len(A) == 1) and (A[0].isupper()))
+
+    def validate_rule(self, B):
+        if (len(B) == 1) and (B[0].islower() or B[0].isdigit()):
+            return True
+        elif (len(B) == 2) and (B[0].islower() or B[0].isdigit()) and (B[1].isupper()):
+            self.add_production(B[1])
+            return True
+        return False
+
+    def validate_epsilon(self, B):
+        if len(B) > 1:
+            if B[1] == self.initial_state:
+                if "&" in self.G[self.initial_state]:
+                    return False
+        return True
+
+    def has_initial_state_on_right_side(self):
+        for production in self.G:
+            for B in self.G[production]:
+                if len(B) > 1:
+                    if B[1] == self.initial_state:
+                        return True
+        return False
+
+
+    def remove_production(self, A):
+        if self.G.has_key(A):
+            del self.G[A]
+
+    def remove_rule(self, A, B):
+        if self.G.has_key(A):
+            if B in self.G[A]:
+                self.G[A].remove(B)
+
+    def validate_grammar(self):
+        for prod in self.G:
+            if not self.G[prod]:
+                return False
+        return True
+
+    def is_lower(self, B):
+        return B.islower()
+
+
+    def check_input(self, input):
+        return input in self.generate_sentences(len(input))
+
+    def generate_sentences(self, size):
+        state = self.initial_state
+        final_sentences = []
+        sentences = []
+        for seq in self.G[state]:
+            if self.is_lower(seq):
+                final_sentences.append(seq)
+            else:
+                sentences.append(seq)
+
+        size -= 1
+        while(size > 0):
+            size -= 1
+            tmp_sentences = sentences[:]
+            for seq in tmp_sentences:
+                for new_seq in self.G[seq[-1]]:
+                    new_seq = seq[0:-1] + new_seq
+                    if self.is_lower(new_seq):
+                        final_sentences.append(new_seq)
+                    else:
+                        sentences.append(new_seq)
+        return final_sentences
+
+    def check_input_optimized(self, input):
+        size = len(input)
+        state = self.initial_state
+        final_sentences = []
+        sentences = []
+        print self.initial_state
+        for seq in self.G[state]:
+            if self.is_lower(seq):
+                if (len(seq) == len(input)):
+                    final_sentences.append(seq)
+            elif (seq[0] == input[0]):
+                sentences.append(seq)
+        size -= 1
+        i = 1
+        while(size > 0):
+            size -= 1
+            tmp_sentences = sentences[:]
+            sentences = []
+            for seq in tmp_sentences:
+                for new_seq in self.G[seq[-1]]:
+                    new_seq = seq[0:-1] + new_seq
+                    if self.is_lower(new_seq):
+                        if (len(new_seq) == len(input)):
+                            final_sentences.append(new_seq)
+                    elif (new_seq[i] == input[i]):
+                        sentences.append(new_seq)
+            i += 1
+        return (input in final_sentences)
+
+    # Prints the Grammar
+    def show(self):
+        print self.G
+
+    """
+        Returns a Dict with terminal/non-terminal symbols
+    """
+    def get_info(self):
+        vn = [self.initial_state]
+        vt = []
+        for state in self.G:
+            if state not in vn:
+                vn.append(state)
+            for rule in self.G[state]:
+                for char in rule:
+                    if char.islower() and (char not in vt):
+                        vt.append(char)
+        return {"vn": vn, "vt": vt}
+
+    def get_vn(self):
+        return self.get_info()["vn"]
+
+    def get_vt(self):
+        return self.get_info()["vt"]
+
+    """
+        Returns the equivalent finite automata
+    """
+    def get_eq_automata(self):
+        fa = FiniteAutomata()
+        new_symbol = None
+        for c in ascii_uppercase:
+            if c not in self.get_vn():
+                new_symbol = c
+                break
+        vn = self.get_vn()
+        vn.append(new_symbol)
+        fa.K = vn
+        for k in fa.K:
+            fa.states[k] = k
+        fa.sigma = self.get_vt()
+        fa.initial_state = self.initial_state
+        fa.final_states.append(new_symbol)
+        if "&" in self.G[self.initial_state]:
+            fa.final_states.append(fa.initial_state)
+
+        for symbol in self.get_vn():
+            fa.transitions[symbol] = {}
+            for rule in self.get_vt():
+                if rule in self.G[symbol]:
+                    fa.transitions[symbol][rule] = [new_symbol]
+                else:
+                    fa.transitions[symbol][rule] = ["-"]
+            for rule in self.G[symbol]:
+                if len(rule) == 2:
+                    if fa.transitions[symbol][rule[0]] and fa.transitions[symbol][rule[0]] != ["-"]:
+                        fa.transitions[symbol][rule[0]].append(rule[1])
+                    else:
+                        fa.transitions[symbol][rule[0]] = [rule[1]]
+        fa.transitions[new_symbol] = {}
+        for rule in fa.sigma:
+            fa.transitions[new_symbol][rule] = ["-"]
+        return fa

@@ -1,7 +1,9 @@
 #!/usr/bin/env python # -*- coding: utf-8 -*
 from tkinter import *
 import tkinter.messagebox as messagebox
-from models import RegGram, Regex, FiniteAutomata
+from automata import FiniteAutomata
+from reg_grammar import RegGram
+from regex import Regex
 import os, pprint, copy
 import pickle
 
