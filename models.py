@@ -1,5 +1,7 @@
+from binary_tree import *
 from string import ascii_uppercase
 import copy
+
 
 class RegGram:
     def  __init__(self, G={}, initial_state=None):
@@ -237,11 +239,21 @@ class RegGram:
 
         return lines
 
+
+"""
+    Class Regex
+"""
 class Regex:
     def  __init__(self):
         self.literal = ""
         self.E = []
 
+    """
+        Transforms a string input into a array of symbols
+
+        - Operations '|', '?', '*' and '+' are represented as a dictionary
+        - Concatenations are represented by array's symbols
+    """
     def set_regex(self, input):
         self.literal = input
         input = "("+input+")"
@@ -282,7 +294,43 @@ class Regex:
                 pass
             else:
                 c.append(char)
-        self.E = context[0][0]
+        self.E = context[0][0] # Validates context and normalize expression
+
+
+    """
+        Converts Regular Expression -> Finite Automata
+        Using De Simone's Method
+    """
+    def get_equivalent_automata(self):
+        tree = BinaryTree()
+        if len(self.E) > 1:
+            root = '.'
+        else:
+            root = self.E[0].keys()[0]
+        current = self.E[0]
+        tree.root.value = root
+        left = None
+        right = None
+        next = None
+        if self.is_operator(current):
+            if self.get_operator(current) == '|':
+                print current.values()
+                c = current.values()[0]
+                print c
+                left = c[0]
+                right = c[1] # TODO Make concat when size 3+ context
+        tree.root.l = left
+        tree.root.r = right
+        tree.root.next = None
+        return tree
+
+    def is_operator(self, c):
+        return type(c) is dict
+
+    def get_operator(self, c):
+        if self.is_operator(c):
+            return c.keys()[0]
+
 
 from string import ascii_uppercase
 

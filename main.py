@@ -1,8 +1,7 @@
 #!/usr/bin/env python # -*- coding: utf-8 -*
 from tkinter import *
 import tkinter.messagebox as messagebox
-import gui
-from models import RegGram, Regex, FiniteAutomata
+from models import *
 import os, pprint, copy
 import pickle
 
@@ -120,6 +119,7 @@ while True:
     print "* [3] Criar Expressão Regular"
     print "* [4] Conversão Gramática Regular -> Autômato Finito"
     print "* [5] Conversão Autômato Finito -> Gramática Regular"
+    print "* [6] Conversão Expressão Regular -> Autômato Finito"
     print "* [9] Sair"
     option = raw_input("\nOpção: ")
     if option in ("9", ""):
@@ -249,4 +249,15 @@ while True:
         # TODO: fix get_eq_reg_gram() to deterministic fa version
         # new_rg = fa.get_eq_reg_gram()
         # new_rg.show()
-        x = raw_input("...")
+        pause = raw_input("...")
+
+    elif option == "6":
+        # teste
+        re = Regex()
+        re.set_regex("(ab|ba)")
+        print re.E
+        tree = re.get_equivalent_automata()
+        print "Tree root value: "+ str(tree.root.value)
+        print "Tree root left child: "+ str(tree.root.l)
+        print "Tree root right child: "+ str(tree.root.r)
+        pause = raw_input("...")
