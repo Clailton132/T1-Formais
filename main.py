@@ -1,22 +1,20 @@
 #!/usr/bin/env python # -*- coding: utf-8 -*
 from tkinter import *
 import tkinter.messagebox as messagebox
-from automata import FiniteAutomata
-from reg_grammar import RegGram
-from regex import Regex
+from models import RegGram, Regex, FiniteAutomata
 import os, pprint, copy
 import pickle
 
-if os.path.isfile("reg_grammar.p"):
-    all_reg_grammars = pickle.load( open( "reg_grammar.p", "rb" ) )
+if os.path.isfile("db/reg_gram.p"):
+    all_reg_grammars = pickle.load(open( "db/reg_gram.p", "rb" ))
     # Var all_reg_grammars returns: {"filename":[g.initial_state, g.G] ... }
     print all_reg_grammars
 else:
     all_reg_grammars = {}
     #print "File does not exist"
 
-if os.path.isfile("regex.p"):
-    all_regex = pickle.load( open( "regex.p", "rb" ) )
+if os.path.isfile("db/regex.p"):
+    all_regex = pickle.load( open( "db/regex.p", "rb" ) )
     print all_regex
 else:
     all_regex = {}
@@ -87,7 +85,7 @@ def gui_save_grammar():
     filename = filenameEntry.get()
     print "Save Grammar: " + str(filename)
     all_reg_grammars[filename] = [g.initial_state, g.G]
-    pickle.dump(all_reg_grammars, open( "reg_grammar.p", "wb" ))
+    pickle.dump(all_reg_grammars, open( "db/reg_gram.p", "wb" ))
     return
 
 def gui_load_grammar():
@@ -113,7 +111,7 @@ def gui_save_regex():
     filename = filenameEntry.get()
     print "Save Regex: " + str(filename)
     all_regex[filename] = [e.literal, e.E]
-    pickle.dump(all_regex, open( "regex.p", "wb" ))
+    pickle.dump(all_regex, open( "db/regex.p", "wb" ))
     return
 
 def gui_load_regex():
@@ -253,23 +251,17 @@ while True:
 
     elif option == "5":
         # test = 'gramatica_a_par'
-        test = 'lista2_4a'
+        test = 'gr_main'
         rg = RegGram(all_reg_grammars[test][1],all_reg_grammars[test][0])
         rg.show()
         fa = rg.get_eq_automata()
         fa.pretty_print()
-        print "fa.transitions"
-        print fa.transitions
 
-        f = copy.copy(fa)
         print "Deterministic: "
-        dfa = f.get_deterministic()
+        dfa = fa.get_deterministic()
         dfa.pretty_print()
 
-        new_rg = fa.get_eq_reg_gram()
-        new_rg.show()
-
-        dfa_new_rg = dfa.get_eq_reg_gram()
-        print "dfa_new_reg.show()"
-        dfa_new_rg.show()
+        # TODO: fix get_eq_reg_gram() to deterministic fa version
+        # new_rg = fa.get_eq_reg_gram()
+        # new_rg.show()
         x = raw_input("...")
