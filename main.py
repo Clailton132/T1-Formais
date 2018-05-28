@@ -1,6 +1,7 @@
 #!/usr/bin/env python # -*- coding: utf-8 -*
 from tkinter import *
 import tkinter.messagebox as messagebox
+import gui
 from models import RegGram, Regex, FiniteAutomata
 import os, pprint, copy
 import pickle
@@ -20,26 +21,10 @@ else:
     all_regex = {}
 
 
-
-def get_formatted_production(g):
-    lines = ""
-    if g.initial_state != None:
-        lines = "G: P = {\n"
-        rules = ""
-        for rule in g.G[g.initial_state]:
-            rules += str(rule) + " | "
-        rules = rules[0:-3]
-        lines += (str(g.initial_state) + " --> " + rules + "\n")
-        for production in g.G.keys():
-            if production != g.initial_state:
-                rules = ""
-                for rule in g.G[production]:
-                    rules += str(rule) + " | "
-                rules = rules[0:-3]
-                lines += (str(production) + " --> " + rules + "\n")
-        lines += "}"
-
-    return lines
+"""
+    Following methods for Tkinter Graphical User Interface
+    gui_*
+"""
 
 def gui_add_rule():
     a = newEntry.get()
@@ -47,7 +32,7 @@ def gui_add_rule():
     aux = g.add_rule(a,b)
     if aux == True:
         g.add_rule(a,b)
-        name = get_formatted_production(g)
+        name = g.get_pretty()
         labelText.set(name)
     else:
         name = aux
@@ -62,7 +47,7 @@ def gui_remove_rule():
     a = newEntry.get()
     b = newEntry2.get()
     g.remove_rule(a,b)
-    name = get_formatted_production(g)
+    name = g.get_pretty()
     labelText.set(name)
     newEntry2.delete(0, END)
     return
@@ -95,7 +80,7 @@ def gui_load_grammar():
     g.set_initial_state(backup[0])
     g.G = backup[1]
     pprint.pprint(g.G)
-    name = get_formatted_production(g)
+    name = g.get_pretty()
     labelText.set(name)
     return
 

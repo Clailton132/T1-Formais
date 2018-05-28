@@ -217,6 +217,26 @@ class RegGram:
             fa.transitions[new_symbol][rule] = ["-"]
         return fa
 
+    def get_pretty(g):
+        lines = ""
+        if g.initial_state != None:
+            lines = "G: P = {\n"
+            rules = ""
+            for rule in g.G[g.initial_state]:
+                rules += str(rule) + " | "
+            rules = rules[0:-3]
+            lines += (str(g.initial_state) + " --> " + rules + "\n")
+            for production in g.G.keys():
+                if production != g.initial_state:
+                    rules = ""
+                    for rule in g.G[production]:
+                        rules += str(rule) + " | "
+                    rules = rules[0:-3]
+                    lines += (str(production) + " --> " + rules + "\n")
+            lines += "}"
+
+        return lines
+
 class Regex:
     def  __init__(self):
         self.literal = ""
