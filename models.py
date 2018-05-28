@@ -302,37 +302,61 @@ class Regex:
         Using De Simone's Method
     """
     def get_equivalent_automata(self):
-        tree = BinaryTree()
-        if len(self.E) > 1:
-            root = '.'
-        else:
-            root = self.E[0].keys()[0]
-        current = self.E[0]
-        tree.root.value = root
-        left = None
-        right = None
-        next = None
-        if self.is_operator(current):
-            if self.get_operator(current) == '|':
-                print current.values()
-                c = current.values()[0]
-                print c
-                left = c[0]
-                right = c[1] # TODO Make concat when size 3+ context
-        tree.root.l = left
-        tree.root.r = right
-        tree.root.next = None
+        tree = self.get_tree(self.E[0])
+        # ...
         return tree
 
-    def is_operator(self, c):
+    def get_tree(self, current):
+        tree = BinaryTree()
+        tree.root = self.get_node(current)
+        return tree
+
+
+    def get_node(self, current):
+        node = Node()
+        if self.is_dictionary(current):
+            node.value = self.get_operator(current)
+            if node.value == "|":
+                node.left = self.get_node(current.values()[0][0])
+                node.right = self.get_node(current.values()[0][1])
+            else:
+                node.left = self.get_node(current.values()[0])
+        else:
+            node.value = "."
+            node.left = Node(current[0])
+            if len(current) == 2:
+                node.right = Node(current[1])
+            elif len(current) > 2:
+                node.right = self.get_node(current[1:])
+
+        return node
+
+
+    """
+        Checks if the next symbol is an dictionary,
+        which means that the current node is a '*', '+' or '?'
+    """
+    def is_dictionary(self, c):
         return type(c) is dict
 
     def get_operator(self, c):
-        if self.is_operator(c):
+        if self.is_dictionary(c):
             return c.keys()[0]
 
 
-from string import ascii_uppercase
+    def print_tree(self, tree):
+        root = tree.root
+        level = [root]
+        while level:
+            print(' '.join("("+str(node.value) + ") " for node in level))
+            next_level = list()
+            for n in level:
+                if n.left:
+                    next_level.append(n.left)
+                if n.right:
+                    next_level.append(n.right)
+                level = next_level
+
 
 class FiniteAutomata:
     def  __init__(self):

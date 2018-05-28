@@ -254,10 +254,8 @@ while True:
     elif option == "6":
         # teste
         re = Regex()
-        re.set_regex("(ab|ba)")
+        re.set_regex("(ab|ba)*")
         print re.E
         tree = re.get_equivalent_automata()
-        print "Tree root value: "+ str(tree.root.value)
-        print "Tree root left child: "+ str(tree.root.l)
-        print "Tree root right child: "+ str(tree.root.r)
+        re.print_tree(tree)
         pause = raw_input("...")
