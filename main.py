@@ -254,7 +254,7 @@ while True:
     elif option == "6":
         # teste
         re = Regex()
-        re.set_regex("(ab|ba)*")
+        re.set_regex("ab|ac|ba|bc")
         print re.E
         tree = re.get_equivalent_automata()
         re.print_tree(tree)

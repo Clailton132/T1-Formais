@@ -210,7 +210,7 @@ class RegGram:
                     fa.transitions[symbol][rule] = ["-"]
             for rule in self.G[symbol]:
                 if len(rule) == 2:
-                    if fa.transitions[symbol][rule[0]] and fa.transitions[symbol][rule[0]] != ["-"]:
+                    if (fa.transitions[symbol][rule[0]] and fa.transitions[symbol][rule[0]] != ["-"]):
                         fa.transitions[symbol][rule[0]].append(rule[1])
                     else:
                         fa.transitions[symbol][rule[0]] = [rule[1]]
@@ -302,13 +302,13 @@ class Regex:
         Using De Simone's Method
     """
     def get_equivalent_automata(self):
-        tree = self.get_tree(self.E[0])
+        tree = self.get_tree()
         # ...
         return tree
 
-    def get_tree(self, current):
+    def get_tree(self):
         tree = BinaryTree()
-        tree.root = self.get_node(current)
+        tree.root = self.get_node(self.E)
         return tree
 
 
@@ -318,16 +318,26 @@ class Regex:
             node.value = self.get_operator(current)
             if node.value == "|":
                 node.left = self.get_node(current.values()[0][0])
-                node.right = self.get_node(current.values()[0][1])
+                if len(current.values()[0]) == 2:
+                    node.right = self.get_node(current.values()[0][1])
+                else:
+                    del current.values()[0][0]
+                    node.right = self.get_node(current)
+
             else:
                 node.left = self.get_node(current.values()[0])
-        else:
+        elif len(current) > 1:
             node.value = "."
-            node.left = Node(current[0])
+            node.left = self.get_node(current[0])
             if len(current) == 2:
-                node.right = Node(current[1])
+                node.right = self.get_node(current[1])
             elif len(current) > 2:
                 node.right = self.get_node(current[1:])
+        else:
+            if self.is_dictionary(current[0]):
+                node.value = get_node(current[0])
+            else:
+                node.value = current[0]
 
         return node
 
@@ -348,7 +358,8 @@ class Regex:
         root = tree.root
         level = [root]
         while level:
-            print(' '.join("("+str(node.value) + ") " for node in level))
+            print(' '.join("("+str(node.value) + ")     "
+                 for node in level))
             next_level = list()
             for n in level:
                 if n.left:
