@@ -335,7 +335,7 @@ class Regex:
                 node.right = self.get_node(current[1:])
         else:
             if self.is_dictionary(current[0]):
-                node.value = get_node(current[0])
+                node = self.get_node(current[0])
             else:
                 node.value = current[0]
 
