@@ -10,3 +10,4 @@ class Node:
 class BinaryTree:
     def __init__(self, root=Node()):
         self.root = root
+        self.leafs = {}

@@ -410,13 +410,11 @@ class Regex:
         while level:
             x = ' '
             for node in level:
-                thread = "-"
+                thread = " "
                 if node.thread:
-                    thread = node.thread.value
-                str_is_threaded = " "
-                #if node.is_threaded:
-                    #str_is_threaded = "/"
-                x += str_is_threaded+"("+str(node.value) + ")---("+str(thread)+")   "
+                    x += "("+str(node.value) + ")-->("+str(node.thread.value)+")   "
+                else:
+                    x += "("+str(node.value) + ")         "
             print x
             next_level = list()
             for n in level:
@@ -448,41 +446,52 @@ class Regex:
 
     def fill_threaded_tree(self,tree):
         initial_node = self.get_most_left_node(tree)
+        if self.is_leaf(initial_node):
+            self.append_leaf_enum(initial_node, tree)
         current = initial_node
         self.thread(current)
         visited = list()
         visited.append(current)
         current = current.parent
         visited.append(current)
-        self.explore_tree(current,visited)
+        self.explore_tree(current, visited, tree)
 
 
+    def append_leaf_enum(self, node, tree):
+        index = len(tree.leafs) + 1
+        tree.leafs[index] = node
 
-    def explore_tree(self, current, visited):
+
+    def explore_tree(self, current, visited, tree):
         if current:
             if current.value in (".", "|"):
                 left_child = current.left
                 if left_child not in visited:
                     visited.append(left_child)
-                    self.explore_tree(left_child, visited)
+                    self.explore_tree(left_child, visited, tree)
                 right_child = current.right
                 if right_child not in visited:
                     visited.append(right_child)
-                    self.explore_tree(right_child, visited)
+                    self.explore_tree(right_child, visited, tree)
                 current = current.parent
                 if current not in visited:
                     visited.append(current)
-                    self.explore_tree(current, visited)
+                    self.explore_tree(current, visited, tree)
             else:
                 self.thread(current)
+                if self.is_leaf(current):
+                    self.append_leaf_enum(current, tree)
                 if current.left not in visited:
                     c = current.left
                     visited.append(c)
-                    self.explore_tree(c, visited)
+                    self.explore_tree(c, visited, tree)
                 current = current.parent
                 if current not in visited:
                     visited.append(current)
-                    self.explore_tree(current, visited)
+                    self.explore_tree(current, visited, tree)
+
+    def is_leaf(self, node):
+        return not node.left
 
 
 
