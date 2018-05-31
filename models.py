@@ -448,6 +448,7 @@ class Regex:
         initial_node = self.get_most_left_node(tree)
         if self.is_leaf(initial_node):
             self.append_leaf_enum(initial_node, tree)
+            tree.sigma.add(initial_node.value)
         current = initial_node
         self.thread(current)
         visited = list()
@@ -481,6 +482,7 @@ class Regex:
                 self.thread(current)
                 if self.is_leaf(current):
                     self.append_leaf_enum(current, tree)
+                    tree.sigma.add(current.value)
                 if current.left not in visited:
                     c = current.left
                     visited.append(c)
