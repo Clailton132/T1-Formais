@@ -1,3 +1,4 @@
+#!/usr/bin/env python # -*- coding: utf-8 -*
 from binary_tree import *
 from string import ascii_uppercase
 import copy
@@ -304,41 +305,64 @@ class Regex:
     def get_equivalent_automata(self):
         tree = self.get_tree()
         # ...
-        return tree
+        # ...
+        # 1 - Costura
+        # 2 - Numerar nodos folha
+        # 3 - Contruir classes de composicao
+        # 4 - Gerar automato
+        # ...
+        # ...
+        # fa = FiniteAutomata()
+        # return fa
+        return tree # provisorio
 
     def get_tree(self):
         tree = BinaryTree()
-        tree.root = self.get_node(self.E)
+        tree.root = self.get_node(self.E, tree.root)
+        tree.root.parent = None
+        level = [tree.root]
+
+        while level:
+            next_level = list()
+            for n in level:
+                if n.left:
+                    n.left.parent = n
+                    next_level.append(n.left)
+                if n.right:
+                    n.right.parent = n
+                    next_level.append(n.right)
+                level = next_level
+
         return tree
 
 
-    def get_node(self, current):
+    def get_node(self, current, parent):
         node = Node()
+        #node.parent = parent
         if self.is_dictionary(current):
             node.value = self.get_operator(current)
             if node.value == "|":
-                node.left = self.get_node(current.values()[0][0])
+                node.left = self.get_node(current.values()[0][0], node)
                 if len(current.values()[0]) == 2:
-                    node.right = self.get_node(current.values()[0][1])
+                    node.right = self.get_node(current.values()[0][1], node)
                 else:
                     del current.values()[0][0]
-                    node.right = self.get_node(current)
+                    node.right = self.get_node(current, node)
 
             else:
-                node.left = self.get_node(current.values()[0])
+                node.left = self.get_node(current.values()[0], node)
         elif len(current) > 1:
             node.value = "."
-            node.left = self.get_node(current[0])
+            node.left = self.get_node(current[0], node)
             if len(current) == 2:
-                node.right = self.get_node(current[1])
+                node.right = self.get_node(current[1], node)
             elif len(current) > 2:
-                node.right = self.get_node(current[1:])
+                node.right = self.get_node(current[1:], node)
         else:
             if self.is_dictionary(current[0]):
-                node = self.get_node(current[0])
+                node = self.get_node(current[0], node)
             else:
                 node.value = current[0]
-
         return node
 
 
@@ -349,17 +373,29 @@ class Regex:
     def is_dictionary(self, c):
         return type(c) is dict
 
+    """
+        Returns the current operator ('*', '+' or '?')
+    """
     def get_operator(self, c):
         if self.is_dictionary(c):
             return c.keys()[0]
 
-
+    """
+        Prints the Binary Tree improving interpretability
+    """
     def print_tree(self, tree):
         root = tree.root
         level = [root]
         while level:
-            print(' '.join("("+str(node.value) + ")     "
-                 for node in level))
+            x = ' '
+            for node in level:
+                str_is_double_parent = "  "
+                if node.parent:
+                    if node.parent.value in ('.','|'):
+                        str_is_double_parent = "  "
+                x += "("+str(node.value) + ")"+str_is_double_parent
+            print x
+
             next_level = list()
             for n in level:
                 if n.left:
@@ -367,6 +403,87 @@ class Regex:
                 if n.right:
                     next_level.append(n.right)
                 level = next_level
+
+    def print_threaded_tree(self, tree):
+        root = tree.root
+        level = [root]
+        while level:
+            x = ' '
+            for node in level:
+                thread = "-"
+                if node.thread:
+                    thread = node.thread.value
+                str_is_threaded = " "
+                #if node.is_threaded:
+                    #str_is_threaded = "/"
+                x += str_is_threaded+"("+str(node.value) + ")---("+str(thread)+")   "
+            print x
+            next_level = list()
+            for n in level:
+                if n.left:
+                    next_level.append(n.left)
+                if n.right:
+                    next_level.append(n.right)
+                level = next_level
+
+    def get_most_left_node(self, tree):
+        current = tree.root
+        while current.left != None:
+            current = current.left
+        return current
+
+    def thread(self, node):
+        current = node
+        if current.parent:
+            while current.parent:
+                current = current.parent
+                if current == None:
+                    break
+                if current.is_threaded == False:
+                    node.thread = current
+                    current.is_threaded = True
+                    break
+        if node.thread == None:
+            node.thread = Node("k")
+
+    def fill_threaded_tree(self,tree):
+        initial_node = self.get_most_left_node(tree)
+        current = initial_node
+        self.thread(current)
+        visited = list()
+        visited.append(current)
+        current = current.parent
+        visited.append(current)
+        self.explore_tree(current,visited)
+
+
+
+    def explore_tree(self, current, visited):
+        if current:
+            if current.value in (".", "|"):
+                left_child = current.left
+                if left_child not in visited:
+                    visited.append(left_child)
+                    self.explore_tree(left_child, visited)
+                right_child = current.right
+                if right_child not in visited:
+                    visited.append(right_child)
+                    self.explore_tree(right_child, visited)
+                current = current.parent
+                if current not in visited:
+                    visited.append(current)
+                    self.explore_tree(current, visited)
+            else:
+                self.thread(current)
+                if current.left not in visited:
+                    c = current.left
+                    visited.append(c)
+                    self.explore_tree(c, visited)
+                current = current.parent
+                if current not in visited:
+                    visited.append(current)
+                    self.explore_tree(current, visited)
+
 
 
 class FiniteAutomata:

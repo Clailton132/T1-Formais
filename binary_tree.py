@@ -3,7 +3,9 @@ class Node:
         self.value = value
         self.left = None # Left child node
         self.right = None # Right child node
-        self.next = None # Next is about threaded binary trees -> "Costura"
+        self.parent = None
+        self.is_threaded = False # is_threaded. Tem "Costura"?
+        self.thread = None # "Costura"
 
 class BinaryTree:
     def __init__(self, root=Node()):

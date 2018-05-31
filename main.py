@@ -8,14 +8,14 @@ import pickle
 if os.path.isfile("db/reg_gram.p"):
     all_reg_grammars = pickle.load(open( "db/reg_gram.p", "rb" ))
     # Var all_reg_grammars returns: {"filename":[g.initial_state, g.G] ... }
-    print all_reg_grammars
+    #print all_reg_grammars
 else:
     all_reg_grammars = {}
     #print "File does not exist"
 
 if os.path.isfile("db/regex.p"):
     all_regex = pickle.load( open( "db/regex.p", "rb" ) )
-    print all_regex
+    #print all_regex
 else:
     all_regex = {}
 
@@ -253,10 +253,13 @@ while True:
 
     elif option == "6":
         # teste
-        re = Regex()
+        r = Regex()
         test = raw_input("Regular expression: ")
-        re.set_regex(test)
-        print re.E
-        tree = re.get_equivalent_automata()
-        re.print_tree(tree)
+        r.set_regex(test)
+        print r.E
+        tree = r.get_equivalent_automata()
+        r.print_tree(tree)
+        print "Threaded"
+        r.fill_threaded_tree(tree)
+        r.print_threaded_tree(tree)
         pause = raw_input("...")
