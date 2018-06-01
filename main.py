@@ -258,11 +258,6 @@ while True:
         test = raw_input("Regular expression: ")
         r.set_regex(test)
         print r.E
-        tree = r.get_equivalent_automata()
-        r.print_tree(tree)
-        print "Threaded"
-        r.fill_threaded_tree(tree)
-        r.print_threaded_tree(tree)
-        r.fill_states_composing(tree)
-        print r.print_composing(tree)
+        automata = r.get_equivalent_automata()
+        automata.pretty_print()
         pause = raw_input("...")

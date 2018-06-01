@@ -304,13 +304,11 @@ class Regex:
     """
     def get_equivalent_automata(self):
         tree = self.get_tree()
-        # 3 - Contruir classes de composicao
-        # 4 - Gerar automato
-        # ...
-        # ...
-        # fa = FiniteAutomata()
-        # return fa
-        return tree # provisorio
+        self.fill_threaded_tree(tree)
+        # self.print_threaded_tree(tree)
+        fa = self.fill_composing_and_get_automata(tree)
+        # self.print_composing(tree)
+        return fa
 
     def get_tree(self):
         tree = BinaryTree()
@@ -495,32 +493,57 @@ class Regex:
     def is_leaf(self, node):
         return not node.left
 
-    def fill_states_composing(self, tree):
+    def fill_composing_and_get_automata(self, tree):
         current = tree.root
         first_state_name = self.add_composing_state(tree)
         self.tree_move_down(current, first_state_name, tree)
         new_states = []
         sigma = sorted(tree.sigma)
+
+        automata = FiniteAutomata()
+        automata.sigma = sigma
+        automata.initial_state = first_state_name
+        automata.deterministic = True
+        automata.transitions[first_state_name] = {}
+
+
         for symbol in sigma:
             state_name = self.add_composing_state(tree)
             new_states.append(state_name)
             for node in tree.composing_states[first_state_name]:
                 if node.value == symbol:
                     self.tree_move_up(node, state_name, tree)
+            automata.transitions[first_state_name][symbol] = state_name
+
+
         while len(new_states) > 0:
             states = new_states
+            for state in states:
+                automata.transitions[state] = {}
             new_states = []
             for symbol in sigma:
                 for state in states:
                     state_name = self.add_composing_state(tree)
+                    automata.transitions[state][symbol] = state_name
                     for node in tree.composing_states[state]:
                         if node.value == symbol:
                             self.tree_move_up(node, state_name, tree)
-                    if (tree.composing_states.values().count(
-                        tree.composing_states[state_name]) > 1):
+                    state_result = tree.composing_states[state_name]
+                    if (tree.composing_states.values().count(state_result) > 1):
                         del tree.composing_states[state_name]
+                        for key, value in tree.composing_states.items():
+                            if value == state_result:
+                                automata.transitions[state][symbol] = key
+                                break
                     else:
                         new_states.append(state_name)
+
+        for state in tree.composing_states:
+            automata.K.append(state)
+            for node in tree.composing_states[state]:
+                if node.value == "k":
+                    automata.final_states.append(state)
+        return automata
 
 
     def is_new_state_equivalent(self, state, tree):
@@ -739,14 +762,14 @@ class FiniteAutomata:
         print "Finite Automata:\n"
         bigger = self.get_max_column_size() * 5
         descript = []
-        descript.append("       |")
+        descript.append("        |")
         hr = "-----------"
         symbols = []
         for symbol in self.sigma:
             if symbol not in symbols:
                 symbols.append(symbol)
                 if self.deterministic:
-                    descript[0] += ""+ str(symbol) + self.print_spaces(1) + "|"
+                    descript[0] += ""+ str(symbol) + self.print_spaces(2) + "|"
                 else:
                     descript[0] += "   "+ str(symbol) + self.print_spaces(bigger - 5) + " |"
                 hr += "----------"
@@ -758,7 +781,8 @@ class FiniteAutomata:
         for symbol in symbols:
             size = len(self.transitions[self.initial_state][symbol])
             if self.deterministic:
-                descript[1] += "" + str(self.get_name_of_state(self.transitions[self.initial_state][symbol])) + self.print_spaces(1)+ "|"
+                #descript[1] += "" + str(self.get_name_of_state(self.transitions[self.initial_state][symbol])) + self.print_spaces(1)+ "|"
+                descript[1] += "" + str(self.transitions[self.initial_state][symbol]) + self.print_spaces(1)+ "|"
             else:
                 descript[1] += "" + str(self.transitions[self.initial_state][symbol]) + self.print_spaces(bigger - size * 5)+ "|"
 
@@ -773,7 +797,8 @@ class FiniteAutomata:
                     if symbol in self.transitions[state]:
                         size = len(self.transitions[state][symbol])
                         if self.deterministic:
-                            descript[i] += "" + str(self.get_name_of_state(self.transitions[state][symbol])) + self.print_spaces(1) + "|"
+                            #descript[i] += "" + str(self.get_name_of_state(self.transitions[state][symbol])) + self.print_spaces(1) + "|"
+                            descript[i] += "" + str(self.transitions[state][symbol]) + self.print_spaces(1) + "|"
                         else:
                             descript[i] += "" + str(self.transitions[state][symbol]) + self.print_spaces(bigger - size * 5) + "|"
                     else:
@@ -787,7 +812,6 @@ class FiniteAutomata:
         pretty += hr
 
         print pretty
-        x = raw_input("\n\n...")
         return pretty
 
 
