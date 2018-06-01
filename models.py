@@ -304,10 +304,6 @@ class Regex:
     """
     def get_equivalent_automata(self):
         tree = self.get_tree()
-        # ...
-        # ...
-        # 1 - Costura
-        # 2 - Numerar nodos folha
         # 3 - Contruir classes de composicao
         # 4 - Gerar automato
         # ...
@@ -411,10 +407,13 @@ class Regex:
             x = ' '
             for node in level:
                 thread = " "
+                leaf_num = " "
+                if node in tree.leafs:
+                    leaf_num = str(tree.leafs[node])
                 if node.thread:
-                    x += "("+str(node.value) + ")-->("+str(node.thread.value)+")   "
+                    x += leaf_num+"("+str(node.value) + ")-->("+str(node.thread.value)+")   "
                 else:
-                    x += "("+str(node.value) + ")         "
+                    x += leaf_num+"("+str(node.value) + ")         "
             print x
             next_level = list()
             for n in level:
@@ -455,29 +454,30 @@ class Regex:
         visited.append(current)
         current = current.parent
         visited.append(current)
-        self.explore_tree(current, visited, tree)
+        self.explore_for_thread(current, visited, tree)
 
 
     def append_leaf_enum(self, node, tree):
         index = len(tree.leafs) + 1
-        tree.leafs[index] = node
+        tree.leafs[node] = index
+        node.id = index
 
 
-    def explore_tree(self, current, visited, tree):
+    def explore_for_thread(self, current, visited, tree):
         if current:
             if current.value in (".", "|"):
                 left_child = current.left
                 if left_child not in visited:
                     visited.append(left_child)
-                    self.explore_tree(left_child, visited, tree)
+                    self.explore_for_thread(left_child, visited, tree)
                 right_child = current.right
                 if right_child not in visited:
                     visited.append(right_child)
-                    self.explore_tree(right_child, visited, tree)
+                    self.explore_for_thread(right_child, visited, tree)
                 current = current.parent
                 if current not in visited:
                     visited.append(current)
-                    self.explore_tree(current, visited, tree)
+                    self.explore_for_thread(current, visited, tree)
             else:
                 self.thread(current)
                 if self.is_leaf(current):
@@ -486,14 +486,118 @@ class Regex:
                 if current.left not in visited:
                     c = current.left
                     visited.append(c)
-                    self.explore_tree(c, visited, tree)
+                    self.explore_for_thread(c, visited, tree)
                 current = current.parent
                 if current not in visited:
                     visited.append(current)
-                    self.explore_tree(current, visited, tree)
+                    self.explore_for_thread(current, visited, tree)
 
     def is_leaf(self, node):
         return not node.left
+
+    def fill_states_composing(self, tree):
+        current = tree.root
+        first_state_name = self.add_composing_state(tree)
+        self.tree_move_down(current, first_state_name, tree)
+        new_states = []
+        sigma = sorted(tree.sigma)
+        for symbol in sigma:
+            state_name = self.add_composing_state(tree)
+            new_states.append(state_name)
+            for node in tree.composing_states[first_state_name]:
+                if node.value == symbol:
+                    self.tree_move_up(node, state_name, tree)
+        while len(new_states) > 0:
+            states = new_states
+            new_states = []
+            for symbol in sigma:
+                for state in states:
+                    state_name = self.add_composing_state(tree)
+                    for node in tree.composing_states[state]:
+                        if node.value == symbol:
+                            self.tree_move_up(node, state_name, tree)
+                    if (tree.composing_states.values().count(
+                        tree.composing_states[state_name]) > 1):
+                        del tree.composing_states[state_name]
+                    else:
+                        new_states.append(state_name)
+
+
+    def is_new_state_equivalent(self, state, tree):
+        for state in sorted(tree.composing_states):
+            return state == tree.composing_states[state]
+
+
+
+    """
+        De Simone's Algorithm - Down routine
+        Compose a composing state
+    """
+    def tree_move_down(self, current, state_name, tree):
+        if current.value in ("|", ".", "?", "*"):
+            left_child = current.left
+            self.tree_move_down(left_child, state_name, tree)
+            if current.value == "|":
+                right_child = current.right
+                self.tree_move_down(right_child, state_name, tree)
+            if current.value in ("?", "*"):
+                thread = current.thread
+                self.tree_move_up(thread, state_name, tree)
+        else: # Leaf
+            self.add_leaf_to_composing(current, state_name, tree)
+
+
+
+    def tree_move_up(self, current, state_name, tree):
+        if current.value == ".":
+            right_child = current.right
+            self.tree_move_down(right_child, state_name, tree)
+        elif current.value == "|":
+            right_child = current.right
+            while not right_child.thread:
+                right_child = right_child.right
+            self.tree_move_up(right_child.thread, state_name, tree)
+        elif current.value == "?":
+            thread = current.thread
+            self.tree_move_up(thread, state_name, tree)
+        elif current.value == "*":
+            left_child = current.left
+            self.tree_move_down(left_child, state_name, tree)
+            thread = current.thread
+            self.tree_move_up(thread, state_name, tree)
+        else: # Leaf
+            if current.value == "k":
+                self.add_leaf_to_composing(current, state_name, tree)
+            else:
+                self.tree_move_up(current.thread, state_name, tree)
+
+    def add_composing_state(self, tree):
+        states = tree.composing_states
+        new_state_name = self.get_next_state_name(states)
+        tree.composing_states[new_state_name] = []
+        return new_state_name
+
+    def add_leaf_to_composing(self, leaf, state_name, tree):
+        if leaf not in tree.composing_states[state_name]:
+            tree.composing_states[state_name].append(leaf)
+
+    def print_composing(self, tree):
+        print "Composing"
+        x = ""
+        for state in sorted(tree.composing_states):
+            x += str(state) + ": "
+            for node in tree.composing_states[state]:
+                id = node.id
+                if not id:
+                    id = ""
+                x+= str(id)+"_"+node.value + " | "
+            print x
+            x = ""
+
+
+    def get_next_state_name(self, states):
+        return "q"+str(len(states))
+
 
 
 

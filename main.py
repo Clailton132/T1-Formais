@@ -236,7 +236,8 @@ while True:
 
     elif option == "5":
         # test = 'gramatica_a_par'
-        test = 'gr_main'
+        #test = 'gr_main'
+        test = 'gr_11a'
         rg = RegGram(all_reg_grammars[test][1],all_reg_grammars[test][0])
         rg.show()
         fa = rg.get_eq_automata()
@@ -262,4 +263,6 @@ while True:
         print "Threaded"
         r.fill_threaded_tree(tree)
         r.print_threaded_tree(tree)
+        r.fill_states_composing(tree)
+        print r.print_composing(tree)
         pause = raw_input("...")
