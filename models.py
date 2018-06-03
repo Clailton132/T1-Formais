@@ -503,7 +503,7 @@ class Regex:
         automata = FiniteAutomata()
         automata.sigma = sigma
         automata.initial_state = first_state_name
-        automata.deterministic = True
+        automata.is_deterministic = True
         automata.transitions[first_state_name] = {}
 
 
@@ -628,7 +628,7 @@ class FiniteAutomata:
     def  __init__(self):
         self.K = []
         self.states = {} # To use when states were renamed
-        self.deterministic = False
+        self.is_deterministic = False
         self.sigma = []
         self.transitions = {}
         self.initial_state = None
@@ -637,14 +637,6 @@ class FiniteAutomata:
     """
         Returns an deterministic version of the finite automata
     """
-
-    def get_deterministic2(self):
-        dfa = FiniteAutomata()
-        dfa.sigma = self.sigma[:]
-        # K' = {p(k)}
-        dfa.K.append(self.initial_state)
-
-        return dfa
 
     def get_deterministic(self):
         dfa = FiniteAutomata()
@@ -710,7 +702,7 @@ class FiniteAutomata:
 
         print "dfa.transitions"
         print dfa.transitions
-        dfa.deterministic = True
+        dfa.is_deterministic = True
         dfa.K = dfa.transitions.keys()
 
         # F' = {p(K) | p(K) intersecction with F != empty state}
@@ -730,6 +722,54 @@ class FiniteAutomata:
 
 
     def get_minimized(self):
+        if not self.is_deterministic:
+            return "Error, minimization requires a deterministic finite automata"
+        minimized_dfa = copy.copy(self)
+
+        minimized_dfa.remove_unreachable_states()
+        minimized_dfa.remove_dead_states()
+        minimized_dfa.group_equivalent_states()
+
+        return minimized_dfa
+
+    def remove_unreachable_states(self):
+        reachable = [self.initial_state]
+        new_reachable_states = [self.initial_state]
+        while new_reachable_states != []:
+            current_state = new_reachable_states[0]
+            del new_reachable_states[0]
+            for symbol in self.sigma:
+                new_state = self.transitions[current_state][symbol]
+                if new_state not in reachable:
+                    reachable.append(new_state)
+                    if new_state not in new_reachable_states:
+                        new_reachable_states.append(new_state)
+        for transition in self.transitions.keys():
+            if transition not in reachable:
+                del self.transitions[transition]
+
+    def remove_dead_states(self):
+        alive = self.final_states[:]
+        new_alive_states = None
+        while new_alive_states != []:
+            new_alive_states = []
+            for state in self.transitions:
+                for symbol in self.sigma:
+                    transition = self.transitions[state][symbol]
+                    if transition in alive:
+                        if state not in alive:
+                            alive.append(state)
+                            if state not in new_alive_states:
+                                new_alive_states.append(state)
+                            break
+        for transition in self.transitions.keys():
+            if transition not in alive:
+                del self.transitions[transition]
+
+
+
+
+    def group_equivalent_states(self):
         pass
 
     """
@@ -748,7 +788,7 @@ class FiniteAutomata:
                     rg.G[state].append(key+value)
         print "\n\n\nself.K:"
         print self.K
-        if self.deterministic:
+        if self.is_deterministic:
             for state in self.states:
                 rg.G[state] = []
                 for key in self.transitions[state]:
@@ -790,7 +830,7 @@ class FiniteAutomata:
         for symbol in sorted(self.sigma):
             if symbol not in symbols:
                 symbols.append(symbol)
-                if self.deterministic:
+                if self.is_deterministic:
                     descript[0] += ""+ str(symbol) + self.print_spaces(2) + "|"
                 else:
                     descript[0] += "   "+ str(symbol) + self.print_spaces(bigger - 5) + " |"
@@ -802,7 +842,7 @@ class FiniteAutomata:
         descript.append(str_final + "->" + str(self.initial_state) + "   |")
         for symbol in symbols:
             size = len(self.transitions[self.initial_state][symbol])
-            if self.deterministic:
+            if self.is_deterministic:
                 descript[1] += "" + str(self.transitions[self.initial_state][symbol]) + " |"
             else:
                 descript[1] += "" + str(self.transitions[self.initial_state][symbol]) + self.print_spaces(bigger - size * 5)+ "|"
@@ -817,7 +857,7 @@ class FiniteAutomata:
                 for symbol in symbols:
                     if symbol in self.transitions[state]:
                         size = len(self.transitions[state][symbol])
-                        if self.deterministic:
+                        if self.is_deterministic:
                             #descript[i] += "" + str(self.get_name_of_state(self.transitions[state][symbol])) + self.print_spaces(1) + "|"
                             descript[i] += "" + str(self.transitions[state][symbol]) + self.print_spaces(1) + "|"
                         else:
@@ -842,7 +882,7 @@ class FiniteAutomata:
     def get_max_column_size(self):
         max = 0
         for symbol in self.K:
-            if self.deterministic:
+            if self.is_deterministic:
                 return 2
             for rule in self.transitions[symbol]:
                 size = len(self.transitions[symbol][rule])

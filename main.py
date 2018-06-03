@@ -234,6 +234,7 @@ while True:
         print my_rg.G
         fa = my_rg.get_eq_automata()
         pretty = fa.pretty_print()
+
         pause = raw_input("...")
 
     elif option == "5":
@@ -248,6 +249,10 @@ while True:
         print "Deterministic: "
         dfa = fa.get_deterministic()
         dfa.pretty_print()
+
+        print "Minimized: "
+        minimized_dfa = dfa.get_minimized()
+        minimized_dfa.pretty_print()
 
         # TODO: fix get_eq_reg_gram() to deterministic fa version
         # new_rg = fa.get_eq_reg_gram()
