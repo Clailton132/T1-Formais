@@ -240,7 +240,7 @@ while True:
     elif option == "5":
         # test = 'gramatica_a_par'
         #test = 'gr_main'
-        test = 'gr_11a'
+        test = 'gr_a_par_sem_bb'
         rg = RegGram(all_reg_grammars[test][1],all_reg_grammars[test][0])
         rg.show()
         fa = rg.get_eq_automata()
@@ -254,8 +254,9 @@ while True:
         minimized_dfa = dfa.get_minimized()
         minimized_dfa.pretty_print()
 
-        # TODO: fix get_eq_reg_gram() to deterministic fa version
-        # new_rg = fa.get_eq_reg_gram()
+        # print "Equivalent Grammar"
+        # # TODO: fix get_eq_reg_gram() to deterministic fa version
+        # new_rg = minimized_dfa.get_eq_reg_gram()
         # new_rg.show()
         pause = raw_input("...")
 

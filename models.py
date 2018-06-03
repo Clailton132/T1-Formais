@@ -195,7 +195,7 @@ class RegGram:
         vn.append(new_symbol)
         fa.K = vn
         for k in fa.K:
-            fa.states[k] = k
+            fa.states[k] = [k]
         fa.sigma = self.get_vt()
         fa.initial_state = self.initial_state
         fa.final_states.append(new_symbol)
@@ -540,6 +540,7 @@ class Regex:
 
         for state in tree.composing_states:
             automata.K.append(state)
+            automata.states[state] = state
             for node in tree.composing_states[state]:
                 if node.value == "k":
                     automata.final_states.append(state)
@@ -639,6 +640,8 @@ class FiniteAutomata:
     """
 
     def get_deterministic(self):
+        if self.is_deterministic:
+            return copy.copy(self)
         dfa = FiniteAutomata()
         dfa.sigma = self.sigma[:]
         # K' = {p(k)}
@@ -648,18 +651,13 @@ class FiniteAutomata:
                 state = self.transitions[symbol][s]
                 if state not in dfa.K:
                     dfa.K.append(state)
-        print "dfa.K"
-        print dfa.K
-
         # Rename states
         for i, state in enumerate(dfa.K):
             dfa.states["q"+str(i)] = state
 
-        print "dfa.states"
-        print dfa.states
-
         # qo' = [qo]
         dfa.initial_state = "q0"
+
         # transitions
         new_states = None
         while new_states != []:
@@ -685,8 +683,6 @@ class FiniteAutomata:
                         ):
                         new_states.append(dfa.transitions[state][item])
 
-
-
             index = len(dfa.states)
             for state in new_states:
                 dfa.K.append(state)
@@ -694,14 +690,11 @@ class FiniteAutomata:
                 index += 1
                 dfa.states[new_state_name] = state
 
-
         for state in dfa.transitions:
             for symbol in dfa.sigma:
                 value = dfa.transitions[state][symbol]
                 dfa.transitions[state][symbol] = self.get_state_name(dfa, value)
 
-        print "dfa.transitions"
-        print dfa.transitions
         dfa.is_deterministic = True
         dfa.K = dfa.transitions.keys()
 
@@ -710,9 +703,6 @@ class FiniteAutomata:
             for s in dfa.states[state]:
                 if s in self.final_states:
                     dfa.final_states.append(state)
-        print "dfa.final_states"
-        print dfa.final_states
-
         return dfa
 
     def get_state_name(self, dfa, search_value):
@@ -728,7 +718,8 @@ class FiniteAutomata:
 
         minimized_dfa.remove_unreachable_states()
         minimized_dfa.remove_dead_states()
-        minimized_dfa.group_equivalent_states()
+        minimized_dfa.add_undefined_state()
+        minimized_dfa.group_equivalent_classes()
 
         return minimized_dfa
 
@@ -747,6 +738,13 @@ class FiniteAutomata:
         for transition in self.transitions.keys():
             if transition not in reachable:
                 del self.transitions[transition]
+                del self.states[transition]
+                self.K.remove(transition)
+        for state in self.transitions:
+            for symbol in self.sigma:
+                if self.transitions[state][symbol] not in self.K:
+                    self.transitions[state][symbol] = "-"
+
 
     def remove_dead_states(self):
         alive = self.final_states[:]
@@ -765,12 +763,60 @@ class FiniteAutomata:
         for transition in self.transitions.keys():
             if transition not in alive:
                 del self.transitions[transition]
+                del self.states[transition]
+                self.K.remove(transition)
+        for state in self.transitions:
+            for symbol in self.sigma:
+                if self.transitions[state][symbol] not in self.K:
+                    self.transitions[state][symbol] = "-"
+
+    def add_undefined_state(self):
+        self.K.append("qE")
+        self.transitions["qE"] = {}
+        for symbol in self.sigma:
+            self.transitions["qE"][symbol] = "qE"
+
+        for state in self.transitions:
+            for symbol in self.sigma:
+                if self.transitions[state][symbol] == "-":
+                    self.transitions[state][symbol] = "qE"
 
 
+    def group_equivalent_classes(self):
+        final_states = self.final_states[:]
+        non_final_states = ([state for state in self.K[:]
+                            if state not in final_states])
+
+        initial_states = {}
+
+        for state in final_states:
+            initial_states[state] = 0
+        for state in non_final_states:
+            initial_states[state] = 1
+
+        print "initial_states", initial_states
+        all_classes = []
+        current = []
+        for state in initial_states:
+            transition = {"state": state}
+            transition["is_final"] = state in final_states
+            equivalence = {}
+            for symbol in self.sigma:
+                equivalence[symbol] = initial_states[self.transitions[state][symbol]]
+            transition["classes"] = equivalence
+            current.append(transition)
+        all_classes.append(current)
+        print "all_classes", all_classes
 
 
-    def group_equivalent_states(self):
+    def get_final_classes(self, current):
+
         pass
+
+    def get_non_final_classes(self):
+        pass
+
+
 
     """
         Returns an equivalent Regular Grammar
@@ -785,9 +831,7 @@ class FiniteAutomata:
                 if value in self.final_states:
                     rg.G[state].append(key)
                 else:
-                    rg.G[state].append(key+value)
-        print "\n\n\nself.K:"
-        print self.K
+                    rg.G[state].append(key+value) # TODO: VERIFICAR ISSO NO DETERMINISTICO
         if self.is_deterministic:
             for state in self.states:
                 rg.G[state] = []
@@ -821,11 +865,10 @@ class FiniteAutomata:
         Prints the finite automata as a table to improve interpretability
     """
     def pretty_print(self):
-        print "Finite Automata:\n"
         bigger = self.get_max_column_size() * 5
         descript = []
         descript.append("        |")
-        hr = "-----------"
+        hr = "---------"
         symbols = []
         for symbol in sorted(self.sigma):
             if symbol not in symbols:
@@ -834,7 +877,7 @@ class FiniteAutomata:
                     descript[0] += ""+ str(symbol) + self.print_spaces(2) + "|"
                 else:
                     descript[0] += "   "+ str(symbol) + self.print_spaces(bigger - 5) + " |"
-                hr += "----------"
+                hr += "----"
 
         str_final = " "
         if self.initial_state in self.final_states:
@@ -898,7 +941,3 @@ class FiniteAutomata:
         for _ in range(n):
             s += " "
         return s
-
-    def symbols_to_alphabet(self):
-        for state in self.states:
-            print state
