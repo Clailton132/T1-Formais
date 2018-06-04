@@ -70,6 +70,8 @@ def gui_save_grammar():
     print "Save Grammar: " + str(filename)
     all_reg_grammars[filename] = [g.initial_state, g.G]
     pickle.dump(all_reg_grammars, open( "db/reg_gram.p", "wb" ))
+    messagebox.showinfo("Saving", "Your grammar was saved succesfully")
+    filenameEntry.delete(0, END)
     return
 
 def gui_load_grammar():
@@ -96,6 +98,8 @@ def gui_save_regex():
     print "Save Regex: " + str(filename)
     all_regex[filename] = [e.literal, e.E]
     pickle.dump(all_regex, open( "db/regex.p", "wb" ))
+    messagebox.showinfo("Saving", "Your regex was saved succesfully")
+    filenameEntry.delete(0, END)
     return
 
 def gui_load_regex():
@@ -108,6 +112,7 @@ def gui_load_regex():
     name = "RE: " +str(e.literal) + "\n" + str(e.E)
     labelText.set(name)
     return
+
 
 while True:
     os.system('clear')
@@ -240,7 +245,7 @@ while True:
     elif option == "5":
         # test = 'gramatica_a_par'
         #test = 'gr_main'
-        test = 'gr_a_par_sem_bb'
+        test = 'example_1'
         rg = RegGram(all_reg_grammars[test][1],all_reg_grammars[test][0])
         rg.show()
         fa = rg.get_eq_automata()

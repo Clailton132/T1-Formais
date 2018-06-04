@@ -719,7 +719,7 @@ class FiniteAutomata:
         minimized_dfa.remove_unreachable_states()
         minimized_dfa.remove_dead_states()
         minimized_dfa.add_undefined_state()
-        minimized_dfa.group_equivalent_classes()
+        minimized_dfa = minimized_dfa.group_equivalent_classes()
 
         return minimized_dfa
 
@@ -740,6 +740,8 @@ class FiniteAutomata:
                 del self.transitions[transition]
                 del self.states[transition]
                 self.K.remove(transition)
+                if transition in self.final_states:
+                    self.final_states.remove(transition)
         for state in self.transitions:
             for symbol in self.sigma:
                 if self.transitions[state][symbol] not in self.K:
@@ -765,6 +767,8 @@ class FiniteAutomata:
                 del self.transitions[transition]
                 del self.states[transition]
                 self.K.remove(transition)
+                if transition in self.final_states:
+                    self.final_states.remove(transition)
         for state in self.transitions:
             for symbol in self.sigma:
                 if self.transitions[state][symbol] not in self.K:
@@ -786,18 +790,12 @@ class FiniteAutomata:
         final_states = self.final_states[:]
         non_final_states = ([state for state in self.K[:]
                             if state not in final_states])
-        equivalent_classes = {
-                                0: final_states,
-                                1: non_final_states
-                             }
-        print "-> initial equivalent_classes: ", equivalent_classes
-
+        equivalent_classes = {0: final_states, 1: non_final_states}
         last_equivalent_classes = equivalent_classes
         while True:
             combinations = {}
-            transitions = {}
             new_equivalent_classes = {}
-            for state in self.K:
+            for state in sorted(self.K):
                 is_state_final = state in final_states
                 not_found = True
                 next_combination = {}
@@ -822,102 +820,51 @@ class FiniteAutomata:
                     new_equivalent_classes[index] = []
                     if state not in new_equivalent_classes[index]:
                         new_equivalent_classes[index].append(state)
-                # transitions[len(transitions)] = transition
 
             if new_equivalent_classes == last_equivalent_classes:
-                print "Finish"
                 break
             last_equivalent_classes = new_equivalent_classes
-            # print "transitions", transitions
-            # print "combinations", combinations
-            # print "new_equivalent_classes", new_equivalent_classes
-            # x = raw_input("...")
-            # print "\n"
-        print "final_equivalent_classes", last_equivalent_classes
 
-        
+
+        final_classes = {}
+        for eq_class in last_equivalent_classes:
+            final_classes["q"+str(eq_class)] = last_equivalent_classes[eq_class]
+
+        final_transitions = {}
+        for eq_class in final_classes:
+            transition = {}
+            for symbol in self.sigma:
+                t = self.transitions[final_classes[eq_class][0]][symbol]
+                state = self.get_equivalent_class_of_state(t, final_classes)
+                transition[symbol] = state
+            final_transitions[eq_class] = transition
+
+        new_fa = FiniteAutomata()
+
+        for eq_class in final_classes:
+            new_fa.states[eq_class] = final_classes[eq_class]
+        new_fa.K = new_fa.states.keys()
+        new_fa.is_deterministic = True
+        new_fa.sigma = self.sigma
+        for eq_class, states in new_fa.states.items():
+            if self.initial_state in states:
+                new_fa.initial_state = eq_class
+
+        new_fa.transitions = final_transitions
+
+        new_fa.final_states = []
+        for state in new_fa.states:
+            if new_fa.states[state][0] in self.final_states:
+                new_fa.final_states.append(state)
+
+        return new_fa
+
 
 
     def get_equivalent_class_of_state(self, state, equivalent_classes):
         for key in equivalent_classes:
             if state in equivalent_classes[key]:
                 return key
-
-
-
-    # def group_equivalent_classes(self):
-    #     final_states = self.final_states[:]
-    #     non_final_states = ([state for state in self.K[:]
-    #                         if state not in final_states])
-    #
-    #     new_classes = {}
-    #
-    #     for state in final_states:
-    #         new_classes[state] = 0
-    #     for state in non_final_states:
-    #         new_classes[state] = 1
-    #
-    #     while True:
-    #         x = raw_input("...")
-    #         print "new_classes", new_classes
-    #         current = []
-    #         for state in new_classes:
-    #             transition = {"state": state}
-    #             transition["is_final"] = state in final_states
-    #             equivalence = {}
-    #             for symbol in self.sigma:
-    #                 equivalence[symbol] = new_classes[self.transitions[state][symbol]]
-    #             transition["classes"] = equivalence
-    #             current.append(transition)
-    #         all_classes = current
-    #
-    #         for classes in all_classes:
-    #             for key, value in classes.items():
-    #                 print key, value
-    #             print "\n"
-    #
-    #             last = all_classes
-    #             new_classes = {}
-    #             current = []
-    #             i = 0
-    #             for item in last:
-    #                 state = item['state']
-    #                 is_final = item['is_final']
-    #                 eq_class = item['classes']
-    #                 transition = {"state": state, "is_final": is_final}
-    #                 if eq_class not in new_classes.values():
-    #                     print "eq_class NOT in new_classes ->", eq_class
-    #                     new_classes[i] = eq_class
-    #                     transition["classes"] = i
-    #                     i += 1
-    #                 else:
-    #                     print "eq_class in new classes ->", eq_class
-    #                     for c in new_classes:
-    #                         if eq_class == new_classes[c]:
-    #                             transition["classes"] = c
-    #                             break
-    #                 print "transition", transition
-    #
-    #                 current.append(transition)
-    #
-    #         if last == current:
-    #             print "MINIMIZING: THE END"
-    #             for classes in all_classes:
-    #                 for key, value in classes.items():
-    #                     print key, value
-    #                 print "\n"
-    #             break
-    #         all_classes = current
-
-
-    def get_final_classes(self, current):
-
-
-        pass
-
-    def get_non_final_classes(self):
-        pass
-
 
 
     """
