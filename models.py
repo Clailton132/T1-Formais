@@ -1020,6 +1020,8 @@ class FiniteAutomata:
         Retorna uma gramática regular equivalente ao autômato finito
     """
     def get_eq_reg_gram(self):
+        if self.is_deterministic:
+            self.get_states_alphabet()
         rg = RegGram()
         rg.initial_state = self.initial_state
         state = self.initial_state
@@ -1029,25 +1031,25 @@ class FiniteAutomata:
                 if value in self.final_states:
                     rg.G[state].append(key)
                 else:
-                    rg.G[state].append(key+value) # TODO: VERIFICAR ISSO NO DETERMINISTICO
-        if self.is_deterministic:
-            for state in self.states:
-                rg.G[state] = []
-                for key in self.transitions[state]:
-                    for value in self.transitions[state][key]:
-                        if value in self.final_states:
-                            rg.G[state].append(key)
-                        else:
-                            rg.G[state].append(key+value)
-        else:
-            for state in self.K:
-                rg.G[state] = []
-                for key in self.transitions[state]:
-                    for value in self.transitions[state][key]:
-                        if value in self.final_states:
-                            rg.G[state].append(key)
-                        else:
-                            rg.G[state].append(key+value)
+                    rg.G[state].append(key+value)
+        # if self.is_deterministic:
+        #     for state in self.states:
+        #         rg.G[state] = []
+        #         for key in self.transitions[state]:
+        #             for value in self.transitions[state][key]:
+        #                 if value in self.final_states:
+        #                     rg.G[state].append(key)
+        #                 else:
+        #                     rg.G[state].append(key+value)
+        # else:
+        for state in self.K:
+            rg.G[state] = []
+            for key in self.transitions[state]:
+                for value in self.transitions[state][key]:
+                    if value in self.final_states:
+                        rg.G[state].append(key)
+                    else:
+                        rg.G[state].append(key+value)
         if self.initial_state in self.final_states:
             rg.G[rg.initial_state].append("&")
         return rg
@@ -1060,6 +1062,31 @@ class FiniteAutomata:
         for state in self.states.keys():
             if self.states[state] == transition:
                 return state
+
+    def get_states_alphabet(self):
+        convertion = {}
+        self.states = {}
+        for i, state in enumerate(self.K):
+            convertion[state] = ascii_uppercase[i]
+            self.states[ascii_uppercase[i]] = state
+        self.K = convertion.values()
+        self.initial_state = convertion[self.initial_state]
+        final_states = self.final_states
+        self.final_states = []
+        for state in final_states:
+            self.final_states.append(convertion[state])
+        for transition in self.transitions:
+            if len(transition) == 1 and transition.isupper():
+                break
+            for symbol in self.sigma:
+                self.transitions[transition][symbol] = convertion[self.transitions[transition][symbol]]
+            self.transitions[convertion[transition]] = self.transitions.pop(transition)
+
+
+
+
+
+
 
 
     """
@@ -1117,8 +1144,8 @@ class FiniteAutomata:
             pretty += line + "\n"
         pretty += hr
 
-        print pretty
-        #return pretty
+        #print pretty
+        return pretty
 
 
     """

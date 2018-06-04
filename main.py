@@ -19,6 +19,7 @@ if os.path.isfile("db/regex.p"):
 else:
     all_regex = {}
 
+option = None
 
 """
     Os seguintes métodos são utilizados para interface gráfica da biblioteca Tkinter
@@ -143,6 +144,73 @@ def gui_load_regex():
     return
 
 
+
+def change_window(app, new_window):
+    app.destroy()
+    if new_window == 0:
+        option = 1
+
+option = None
+
+if option == "1":
+    g = RegGram()
+    app = Tk()
+    app.title("Linguagens Regulares")
+    app.geometry('700x800+200+200')
+
+    labelError = StringVar()
+    # labelError.set("SOME ERROR")
+    label0 = Label(app, textvariable=labelError, height=2)
+    label0.pack(padx=3)
+    Label(app, text="Gramáticas Regulares", height=1, font=("Helvetica", 28)).pack()
+    labelText = StringVar()
+    labelText.set("G: P = ")
+    label1 = Label(app, textvariable=labelText, height=10, font=("Helvetica", 16), borderwidth=2, relief="groove", padx=60,pady=15)
+    label1.pack()
+
+    Label(app, text="Lado esquerdo da produção (ex: S)", height=1, font=("Helvetica", 16)).pack()
+    A = StringVar(None)
+    newEntry = Entry(app, textvariable=A)
+    newEntry.insert(0,"S")
+    newEntry.pack()
+    Label(app, text="Lado direito da produção (ex: aA)", height=1, font=("Helvetica", 16)).pack()
+    B = StringVar(None)
+    newEntry2 = Entry(app, textvariable=B)
+    newEntry2.insert(0,"")
+    newEntry2.pack()
+
+    buttonAdd = Button(app, text="Adicionar regra", width=20, command=gui_add_rule)
+    buttonAdd.pack(side='top', padx=15)
+    buttonRemove = Button(app, text="Remove regra", width=20, command=gui_remove_rule)
+    buttonRemove.pack(side='top', padx=15)
+
+    #Label(app, text="Production Right Side", height=2, font=("Helvetica", 18)).pack()
+    labelCheckInput = StringVar()
+    label3 = Label(app, textvariable=labelCheckInput, height=1, font=("Helvetica", 14))
+    label3.pack()
+    Label(app, text="Testar sentença na GR", height=1, font=("Helvetica", 16)).pack()
+    input = StringVar(None)
+    newEntry3 = Entry(app, textvariable=input)
+    newEntry3.insert(0,"")
+    newEntry3.pack()
+    button2 = Button(app, text="Testar", width=20, command=gui_check_input)
+    button2.pack(side='top', padx=15,pady=15)
+
+
+    buttonLoad = Button(app, text="Carregar gramática", width=20, command=gui_load_grammar)
+    buttonLoad.pack(side='bottom', padx=15, pady=(0, 30))
+    buttonSave = Button(app, text="Salvar gramática", width=20, command=gui_save_grammar)
+    buttonSave.pack(side='bottom', padx=15)
+    filename = StringVar(None)
+    filenameEntry = Entry(app, textvariable=filename)
+    filenameEntry.insert(0,"filename")
+    filenameEntry.pack(side='bottom')
+    Label(app, text="Salvar / Carregar Gramática", height=1, font=("Helvetica", 16)).pack(side='bottom')
+
+    app.mainloop()
+
+
+
 while True:
     os.system('clear')
     print "**********************************"
@@ -165,7 +233,7 @@ while True:
         g = RegGram()
         app = Tk()
         app.title("Linguagens Regulares")
-        app.geometry('500x800+200+200')
+        app.geometry('700x800+200+200')
 
         labelError = StringVar()
         # labelError.set("SOME ERROR")
@@ -223,7 +291,7 @@ while True:
         e = Regex()
         app = Tk()
         app.title("Linguagens Regulares")
-        app.geometry('500x800+200+200')
+        app.geometry('700x800+200+200')
 
         Label(app, text="Salvar / Carregar ER", height=1, font=("Helvetica", 16)).pack(side='top')
         filename = StringVar(None)
@@ -273,24 +341,18 @@ while True:
     elif option == "5":
         # test = 'gramatica_a_par'
         #test = 'gr_main'
-        test = 'example_1'
+        test = 'lista2_4a'
         rg = RegGram(all_reg_grammars[test][1],all_reg_grammars[test][0])
         rg.show()
         fa = rg.get_eq_automata()
         fa.pretty_print()
 
-        print "Deterministic: "
         dfa = fa.get_deterministic()
-        dfa.pretty_print()
-
-        print "Minimized: "
         minimized_dfa = dfa.get_minimized()
-        minimized_dfa.pretty_print()
-
         # print "Equivalent Grammar"
         # # TODO: fix get_eq_reg_gram() to deterministic fa version
-        # new_rg = minimized_dfa.get_eq_reg_gram()
-        # new_rg.show()
+        new_rg = minimized_dfa.get_eq_reg_gram()
+        print new_rg.G
         pause = raw_input("...")
 
     elif option == "6":
