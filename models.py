@@ -4,6 +4,9 @@ from string import ascii_uppercase
 import copy
 
 
+"""
+    Classe que representa as Gramáticas Regulares
+"""
 class RegGram:
     def  __init__(self, G={}, initial_state=None):
         self.G = G
@@ -17,7 +20,13 @@ class RegGram:
         return state == self.initial_state
 
 
-    # Productions A -> B
+    """
+        Adiciona produção, se válida, à gramática regular.
+        A primeira produção inserida será o estado inicial da GR
+        G: P =  {
+                    A ->
+                }
+    """
     def add_production(self, A):
         if not self.G:
             self.initial_state = A
@@ -26,10 +35,21 @@ class RegGram:
                 self.G[A] = []
                 return True
             else:
-                return str(A) + " --> is not a valid production for Regular Grammars"
+                return str(A) + " --> não é uma produção válida para Gramáticas Regulares"
         return True
 
-    # Rules B on A -> B
+    """
+        Adiciona regra de produção, se válida, à gramática regular.
+
+        Somente são válidas regras do tipo: Vt (ex: a) ou VtVn (ex: aA)
+
+        Verifica se epsilon pode ser inserido e se for, analisa próximas
+        inserções para evitar o estado inicial do lado direito das produções
+
+        G: P =  {
+                    A -> B
+                }
+    """
     def add_rule(self, A, B):
         if self.add_production(A) == True:
             if B not in self.G[A]:
@@ -38,26 +58,32 @@ class RegGram:
                         self.G[A].append(B)
                         return True
                     else:
-                        return "The initial state can't be assigned on the right side of the production because its production has epsilon(&)"
+                        return "O estado inicial não pode ser adicionado no lado direito da produção pois o mesmo contém epsilon transição"
                 elif B == "&":
                     if self.is_initial_state(A):
                         if not self.has_initial_state_on_right_side():
                             self.G[A].append(B)
                             return True
                         else:
-                            return "& cant be assigned because the initial state is on a right side production"
+                            return "& não pode ser adicionado pois o estado inicial está presente do lado direito de alguma produção"
 
                     else:
-                        return "& can only be assigned to the initial state"
+                        return "& só pode ser adicionado ao estado inicial " + self.initial_state
 
                 else:
-                    return " --> " +str(B) + " is not a valid production for Regular Grammars"
+                    return " --> " +str(B) + " não é uma produção válida para Gramáticas Regulares"
         else:
             return self.add_production(A)
 
+    """
+        Valida formato de produções
+    """
     def validate_production(self, A):
         return ((len(A) == 1) and (A[0].isupper()))
 
+    """
+        Valida formato das regras de produção
+    """
     def validate_rule(self, B):
         if (len(B) == 1) and (B[0].islower() or B[0].isdigit()):
             return True
@@ -66,6 +92,9 @@ class RegGram:
             return True
         return False
 
+    """
+        Valida inserção de epsilon
+    """
     def validate_epsilon(self, B):
         if len(B) > 1:
             if B[1] == self.initial_state:
@@ -73,6 +102,9 @@ class RegGram:
                     return False
         return True
 
+    """
+        Verifica a existência de estado inicial no lado direito das produções
+    """
     def has_initial_state_on_right_side(self):
         for production in self.G:
             for B in self.G[production]:
@@ -81,29 +113,45 @@ class RegGram:
                         return True
         return False
 
-
+    """
+        Remove uma produção A
+    """
     def remove_production(self, A):
         if self.G.has_key(A):
             del self.G[A]
 
+    """
+        Remove uma regra de produção A -> B
+    """
     def remove_rule(self, A, B):
         if self.G.has_key(A):
             if B in self.G[A]:
                 self.G[A].remove(B)
 
+    """
+        Valida existência de pelo menos uma produção
+    """
     def validate_grammar(self):
         for prod in self.G:
             if not self.G[prod]:
                 return False
         return True
 
+    """
+        Verifica se B é Vt
+    """
     def is_lower(self, B):
         return B.islower()
 
-
+    """
+        Verifica se sentença pertence à gramática
+    """
     def check_input(self, input):
         return input in self.generate_sentences(len(input))
 
+    """
+        Gera possíveis sentenças de tamanho 'size'
+    """
     def generate_sentences(self, size):
         state = self.initial_state
         final_sentences = []
@@ -127,6 +175,10 @@ class RegGram:
                         sentences.append(new_seq)
         return final_sentences
 
+    """
+        De forma otimizada, verifica se sentença pertence à gramática
+        utilizando caminhos férteis para a sentença.
+    """
     def check_input_optimized(self, input):
         size = len(input)
         state = self.initial_state
@@ -161,7 +213,7 @@ class RegGram:
         print self.G
 
     """
-        Returns a Dict with terminal/non-terminal symbols
+        Retorna um dicionário com símbolos terminais e não terminais
     """
     def get_info(self):
         vn = [self.initial_state]
@@ -175,14 +227,20 @@ class RegGram:
                         vt.append(char)
         return {"vn": vn, "vt": vt}
 
+    """
+        Retorna uma lista de símbolos não terminais
+    """
     def get_vn(self):
         return self.get_info()["vn"]
 
+    """
+        Retorna uma lista de símbolos terminais
+    """
     def get_vt(self):
         return self.get_info()["vt"]
 
     """
-        Returns the equivalent finite automata
+        Retorna um autômato finito equivalente à gramatica regular
     """
     def get_eq_automata(self):
         fa = FiniteAutomata()
@@ -220,6 +278,9 @@ class RegGram:
             fa.transitions[new_symbol][rule] = ["-"]
         return fa
 
+    """
+        Função auxiliar que permite melhor visualização da gramática regular
+    """
     def get_pretty(g):
         lines = ""
         if g.initial_state != None:
@@ -240,9 +301,8 @@ class RegGram:
 
         return lines
 
-
 """
-    Class Regex
+    Class Regex: Expressões Regulares
 """
 class Regex:
     def  __init__(self):
@@ -250,10 +310,13 @@ class Regex:
         self.E = []
 
     """
-        Transforms a string input into a array of symbols
+        Transforma uma entrada da forma String em uma lista de símbolos levando
+        em consideração a ordem de precedência: 1)* 2). 3)|
 
-        - Operations '|', '?', '*' and '+' are represented as a dictionary
-        - Concatenations are represented by array's symbols
+        - Operadores '|', '?', '*' são representados como dicionários
+        - Concatenações são representadas pela posição dos símbolos na lista
+
+        Exemplo: (a|bc*) é representado por [{'|': [['a'], ['b'],{'*': 'c'}]}]
     """
     def set_regex(self, input):
         self.literal = input
@@ -299,8 +362,8 @@ class Regex:
 
 
     """
-        Converts Regular Expression -> Finite Automata
-        Using De Simone's Method
+        Converte uma expressão regular em um autômato finito
+        Utilizando o método De Simone
     """
     def get_equivalent_automata(self):
         tree = self.get_tree()
@@ -310,6 +373,9 @@ class Regex:
         # self.print_composing(tree)
         return fa
 
+    """
+        Obtém a árvore binária costurada para conversão ER -> AF
+    """
     def get_tree(self):
         tree = BinaryTree()
         tree.root = self.get_node(self.E, tree.root)
@@ -326,10 +392,12 @@ class Regex:
                     n.right.parent = n
                     next_level.append(n.right)
                 level = next_level
-
         return tree
 
-
+    """
+        Obtém o nodo derivado do atual de forma recursiva
+        A formação de cada nodo é dependente do tipo de operador
+    """
     def get_node(self, current, parent):
         node = Node()
         #node.parent = parent
@@ -361,21 +429,21 @@ class Regex:
 
 
     """
-        Checks if the next symbol is an dictionary,
-        which means that the current node is a '*' or '?'
+        Verifica se o próximo símbolo é um dicionário,
+        o que significa que o nodo atual é '*' ou '?'
     """
     def is_dictionary(self, c):
         return type(c) is dict
 
     """
-        Returns the current operator ('*' or '?')
+        Retorna o operador atual
     """
     def get_operator(self, c):
         if self.is_dictionary(c):
             return c.keys()[0]
 
     """
-        Prints the Binary Tree improving interpretability
+        Função auxiliar que imprime na tela a árvore binária
     """
     def print_tree(self, tree):
         root = tree.root
@@ -398,6 +466,10 @@ class Regex:
                     next_level.append(n.right)
                 level = next_level
 
+    """
+        Função auxiliar que imprime na tela a árvore binária costurada
+        indicando o número do nodo folha
+    """
     def print_threaded_tree(self, tree):
         root = tree.root
         level = [root]
@@ -421,12 +493,18 @@ class Regex:
                     next_level.append(n.right)
                 level = next_level
 
+    """
+        Retorna o nodo folha mais a esquerda da árvore
+    """
     def get_most_left_node(self, tree):
         current = tree.root
         while current.left != None:
             current = current.left
         return current
 
+    """
+        Insere uma costura do nodo atual até o nodo pai livre mais próximo
+    """
     def thread(self, node):
         current = node
         if current.parent:
@@ -439,8 +517,11 @@ class Regex:
                     current.is_threaded = True
                     break
         if node.thread == None:
-            node.thread = Node("k")
+            node.thread = Node("k") # O nodo 'k' representa o símbolo no algoritmo
 
+    """
+        Inicializa costura da árvore
+    """
     def fill_threaded_tree(self,tree):
         initial_node = self.get_most_left_node(tree)
         if self.is_leaf(initial_node):
@@ -454,13 +535,18 @@ class Regex:
         visited.append(current)
         self.explore_for_thread(current, visited, tree)
 
-
+    """
+        Identifica nodos folha
+    """
     def append_leaf_enum(self, node, tree):
         index = len(tree.leafs) + 1
         tree.leafs[node] = index
         node.id = index
 
 
+    """
+        Explora a árvore para completar as costuras nos nodos corretos
+    """
     def explore_for_thread(self, current, visited, tree):
         if current:
             if current.value in (".", "|"):
@@ -490,9 +576,18 @@ class Regex:
                     visited.append(current)
                     self.explore_for_thread(current, visited, tree)
 
+    """
+        Retorna se o nodo de entrada é folha
+    """
     def is_leaf(self, node):
         return not node.left
 
+    """
+        A partir do nodo raiz, utilizado rotinas subir/descer do algoritmo
+        De Simone, preenche os estados alcançáveis e cria uma composição
+
+        Então retorna o automato equivalente
+    """
     def fill_composing_and_get_automata(self, tree):
         current = tree.root
         first_state_name = self.add_composing_state(tree)
@@ -547,6 +642,10 @@ class Regex:
         return automata
 
 
+    """
+        Para cada estado adicionado, é utilizado para verificar se não
+        existe no conjunto atual de estados, outro equivalente.
+    """
     def is_new_state_equivalent(self, state, tree):
         for state in sorted(tree.composing_states):
             return state == tree.composing_states[state]
@@ -554,8 +653,8 @@ class Regex:
 
 
     """
-        De Simone's Algorithm - Down routine
-        Compose a composing state
+        Algoritmo De Simone: Rotinas descer
+        Criando um estado de composição
     """
     def tree_move_down(self, current, state_name, tree):
         if current.value in ("|", ".", "?", "*"):
@@ -571,7 +670,10 @@ class Regex:
             self.add_leaf_to_composing(current, state_name, tree)
 
 
-
+    """
+        Algoritmo De Simone: Rotinas subir
+        Criando um estado de composição
+    """
     def tree_move_up(self, current, state_name, tree):
         if current.value == ".":
             right_child = current.right
@@ -595,16 +697,30 @@ class Regex:
             else:
                 self.tree_move_up(current.thread, state_name, tree)
 
+
+    """
+        Algoritmo De Simone:
+        Adiciona estado de composição
+    """
     def add_composing_state(self, tree):
         states = tree.composing_states
         new_state_name = self.get_next_state_name(states)
         tree.composing_states[new_state_name] = []
         return new_state_name
 
+    """
+        Algoritmo De Simone:
+        Adiciona nodo folha ao estado de composição se
+        o mesmo já não está presente
+
+    """
     def add_leaf_to_composing(self, leaf, state_name, tree):
         if leaf not in tree.composing_states[state_name]:
             tree.composing_states[state_name].append(leaf)
 
+    """
+        Função auxiliar que imprime os estados de composição
+    """
     def print_composing(self, tree):
         print "Composing"
         x = ""
@@ -618,12 +734,18 @@ class Regex:
             print x
             x = ""
 
-
+    """
+        Função auxilar para retornar o nome de um próximo estado
+        no formato padrão da aplicação
+    """
     def get_next_state_name(self, states):
         return "q"+str(len(states))
 
 
 
+"""
+    Classe que representa Autômatos Finitos
+"""
 
 class FiniteAutomata:
     def  __init__(self):
@@ -636,7 +758,7 @@ class FiniteAutomata:
         self.final_states = []
 
     """
-        Returns an deterministic version of the finite automata
+        Retorna uma versão deterministica do autômato finito
     """
 
     def get_deterministic(self):
@@ -705,12 +827,24 @@ class FiniteAutomata:
                     dfa.final_states.append(state)
         return dfa
 
+    """
+        Procura nos estados do novo autômato o nome equivalente aos
+        estados compostos do autômato original
+    """
     def get_state_name(self, dfa, search_value):
         for key, value in dfa.states.items():
             if value == search_value:
                 return key
 
+    """
+        Retorna o autômato finito mínimo (único)
+        A autômato de entrada deve ser deterministico
 
+        - Remove estados inalcançáveis
+        - Remove estados mortos
+        - Adiciona um estado de erro (indefinido)
+        - Agrupa estados em classes de equivalência
+    """
     def get_minimized(self):
         if not self.is_deterministic:
             return "Error, minimization requires a deterministic finite automata"
@@ -723,6 +857,9 @@ class FiniteAutomata:
 
         return minimized_dfa
 
+    """
+        - Remove estados inalcançáveis
+    """
     def remove_unreachable_states(self):
         reachable = [self.initial_state]
         new_reachable_states = [self.initial_state]
@@ -747,7 +884,9 @@ class FiniteAutomata:
                 if self.transitions[state][symbol] not in self.K:
                     self.transitions[state][symbol] = "-"
 
-
+    """
+        - Remove estados mortos
+    """
     def remove_dead_states(self):
         alive = self.final_states[:]
         new_alive_states = None
@@ -774,6 +913,9 @@ class FiniteAutomata:
                 if self.transitions[state][symbol] not in self.K:
                     self.transitions[state][symbol] = "-"
 
+    """
+        - Adiciona um estado de erro (indefinido)
+    """
     def add_undefined_state(self):
         self.K.append("qE")
         self.states["qE"] = ["qE"]
@@ -786,6 +928,10 @@ class FiniteAutomata:
                 if self.transitions[state][symbol] == "-":
                     self.transitions[state][symbol] = "qE"
 
+    """
+        Cria classes de equivalência entre estados finais e não finais,
+        resultando em um autômato mínimo equivalente ao original
+    """
     def group_equivalent_classes(self):
         final_states = self.final_states[:]
         non_final_states = ([state for state in self.K[:]
@@ -860,7 +1006,10 @@ class FiniteAutomata:
         return new_fa
 
 
-
+    """
+        Para a iteração atual, busca a classe de equivalência na qual
+        um estado 'state' é pertencente
+    """
     def get_equivalent_class_of_state(self, state, equivalent_classes):
         for key in equivalent_classes:
             if state in equivalent_classes[key]:
@@ -868,7 +1017,7 @@ class FiniteAutomata:
 
 
     """
-        Returns an equivalent Regular Grammar
+        Retorna uma gramática regular equivalente ao autômato finito
     """
     def get_eq_reg_gram(self):
         rg = RegGram()
@@ -903,7 +1052,10 @@ class FiniteAutomata:
             rg.G[rg.initial_state].append("&")
         return rg
 
-
+    """
+        Retorna nome do estado dado a composição de estados originais,
+        antes da determinização
+    """
     def get_name_of_state(self, transition):
         for state in self.states.keys():
             if self.states[state] == transition:
@@ -911,7 +1063,8 @@ class FiniteAutomata:
 
 
     """
-        Prints the finite automata as a table to improve interpretability
+        Imprime o autômato finito através de uma tabela para aumentar
+        a interpretabilide.
     """
     def pretty_print(self):
         bigger = self.get_max_column_size() * 5
@@ -969,7 +1122,7 @@ class FiniteAutomata:
 
 
     """
-        Returns the size of the max column to improve pretty print
+        Função auxiliar para impressão da tabela que representa o AF
     """
     def get_max_column_size(self):
         max = 0
@@ -983,7 +1136,8 @@ class FiniteAutomata:
         return max
 
     """
-        Prints 'n' blank spaces
+        Função auxiliar para impressão de espaços em branco para
+        alinhamento da impressão do AF
     """
     def print_spaces(self, n):
         s = ""
