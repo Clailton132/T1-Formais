@@ -1073,29 +1073,59 @@ class FiniteAutomata:
             self.transitions[convertion[transition]] = self.transitions.pop(transition)
 
     def is_sentence_recognized(self, input):
-        current_state = self.initial_state
-        if self.is_deterministic:
-            for char in input:
-                current_state = self.transitions[current_state][char]
-            return current_state in self.final_states
+        automata = self
+        if not automata.is_deterministic:
+            automata = automata.get_deterministic()
 
-        current_states = []
-        current_states.append(self.transitions[current_state][input[0]])
-        if len(input) > 1:
-            for char in input[1:]:
-                new_current_states = []
-                print "current_states", current_states
-                for state in current_states:
-                    new_current_states.append(self.transitions[current_state][char])
-                current_states = new_current_states
-        for state in current_states:
-            if state in self.final_states:
-                return True
-        return False
+        current_state = automata.initial_state
+        for char in input:
+            current_state = automata.transitions[current_state][char]
+        return current_state in automata.final_states
+        # current_states = []
+        # current_states.append(self.transitions[current_state][input[0]])
+        # if len(input) > 1:
+        #     for char in input[1:]:
+        #         new_current_states = []
+        #         print "current_states", current_states
+        #         for state in current_states:
+        #             new_current_states.append(self.transitions[current_state][char])
+        #         current_states = new_current_states
+        # for state in current_states:
+        #     if state in self.final_states:
+        #         return True
+        # return False
 
 
-    def generate_sentences(self, size):
-        return
+    def generate_sentences(self, max_size):
+        automata = copy.copy(self)
+        if not automata.is_deterministic:
+            automata = automata.get_deterministic()
+        acceptable = set()
+        if automata.initial_state in automata.final_states:
+            acceptable.add("&")
+        sentence = ""
+        acceptable |=(automata.get_acceptable(max_size, automata.initial_state, sentence))
+        return list(acceptable)
+
+
+    def get_acceptable(self, size_left, current_state, sentence):
+        acceptable = set()
+        if size_left == 0:
+            return acceptable
+        for symbol, transition in self.transitions[current_state].items():
+            new_sentence = sentence + symbol
+            if transition in self.final_states:
+                acceptable.add(new_sentence)
+            acceptable |= (self.get_acceptable(size_left - 1, transition, new_sentence))
+        return acceptable
+
+    def get_acceptable_size_n(self, n):
+        all_acceptable = self.generate_sentences(n)
+        size_n_acceptable = []
+        for sentence in all_acceptable:
+            if len(sentence) == n:
+                size_n_acceptable.append(sentence)
+        return size_n_acceptable
 
 
 

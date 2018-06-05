@@ -375,4 +375,15 @@ while True:
         minimized_dfa = dfa.get_minimized()
         sentence = raw_input("Enter sentence: ")
         print fa.is_sentence_recognized(sentence)
+        print "All sentences of length 2:"
+        print fa.get_acceptable_size_n(2)
+        print "All sentences of length 4:"
+        print fa.get_acceptable_size_n(4)
+        print "All sentences of length 6:"
+        print fa.get_acceptable_size_n(6)
+        print "All sentences of length 8:"
+        print fa.get_acceptable_size_n(8)
+        print "\nAll sentences of max length 10"
+        print fa.generate_sentences(10)
+
         pause = raw_input("...")
