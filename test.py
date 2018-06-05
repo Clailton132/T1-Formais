@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 from models import *
-import Tkinter as tk
+import tkinter as tk
 from tkinter import *
 import tkinter.messagebox as messagebox
 import os, pprint, copy
@@ -9,14 +9,14 @@ import pickle
 if os.path.isfile("db/reg_gram.p"):
     all_reg_grammars = pickle.load(open( "db/reg_gram.p", "rb" ))
     # Var all_reg_grammars returns: {"filename":[g.initial_state, g.G] ... }
-    #print all_reg_grammars
+    #print(all_reg_grammars)
 else:
     all_reg_grammars = {}
-    #print "File does not exist"
+    #print("File does not exist")
 
 if os.path.isfile("db/regex.p"):
     all_regex = pickle.load( open( "db/regex.p", "rb" ) )
-    #print all_regex
+    #print(all_regex)
 else:
     all_regex = {}
 
@@ -33,8 +33,8 @@ current_fa = None
 def gui_add_rule():
     a = newEntry.get()
     b = newEntry2.get()
-    print a
-    print b
+    print(a)
+    print(b)
     aux = g.add_rule(a,b)
     if aux == True:
         g.add_rule(a,b)
@@ -84,7 +84,7 @@ def gui_check_input():
 """
 def gui_save_grammar():
     filename = filenameEntry.get()
-    print "Save Grammar: " + str(filename)
+    print("Save Grammar: " + str(filename))
     all_reg_grammars[filename] = [g.initial_state, g.G]
     pickle.dump(all_reg_grammars, open( "db/reg_gram.p", "wb" ))
     messagebox.showinfo("Salvando", "Sua gramática foi salva com sucesso")
@@ -97,7 +97,7 @@ def gui_save_grammar():
 """
 def gui_load_grammar():
     filename = filenameEntry.get()
-    print "Load Grammar: " + str(filename)
+    print("Load Grammar: " + str(filename))
     backup = copy.deepcopy(all_reg_grammars[filename])
     g.set_initial_state(backup[0])
     g.G = backup[1]
@@ -116,9 +116,9 @@ def gui_load_grammar():
 """
 def gui_set_regex():
     regex = newEntry_regex.get()
-    print "regex", regex
+    print("regex", regex)
     e.set_regex(regex)
-    print "e.E", e.E
+    print("e.E", e.E)
     labelText_regex.set("RE: " + str(regex)+"\n"+str(e.E))
     newEntry_regex.delete(0, END)
     #newEntry.insert(0, 'Default text after button click')
@@ -129,7 +129,7 @@ def gui_set_regex():
 """
 def gui_save_regex():
     filename = filenameEntry_regex.get()
-    print "Save Regex: " + str(filename)
+    print("Save Regex: " + str(filename))
     all_regex[filename] = [e.literal, e.E]
     pickle.dump(all_regex, open( "db/regex.p", "wb" ))
     messagebox.showinfo("Saving", "Your regex was saved succesfully")
@@ -141,7 +141,7 @@ def gui_save_regex():
 """
 def gui_load_regex():
     filename = filenameEntry_regex.get()
-    print "Load Regex: " + str(filename)
+    print("Load Regex: " + str(filename))
     backup = copy.deepcopy(all_regex[filename])
     e.literal = backup[0]
     e.E = backup[1]

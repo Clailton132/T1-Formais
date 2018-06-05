@@ -30,7 +30,7 @@ class RegGram:
     def add_production(self, A):
         if not self.G:
             self.initial_state = A
-        if not self.G.has_key(A):
+        if A not in self.G:
             if self.validate_production(A):
                 self.G[A] = []
                 return True
@@ -184,7 +184,7 @@ class RegGram:
         state = self.initial_state
         final_sentences = []
         sentences = []
-        print self.initial_state
+        print(self.initial_state)
         for seq in self.G[state]:
             if self.is_lower(seq):
                 if (len(seq) == len(input)):
@@ -210,7 +210,7 @@ class RegGram:
 
     # Prints the Grammar
     def show(self):
-        print self.G
+        print(self.G)
 
     """
         Retorna um dicionário com símbolos terminais e não terminais
@@ -456,7 +456,7 @@ class Regex:
                     if node.parent.value in ('.','|'):
                         str_is_double_parent = "  "
                 x += "("+str(node.value) + ")"+str_is_double_parent
-            print x
+            print(x)
 
             next_level = list()
             for n in level:
@@ -484,7 +484,7 @@ class Regex:
                     x += leaf_num+"("+str(node.value) + ")-->("+str(node.thread.value)+")   "
                 else:
                     x += leaf_num+"("+str(node.value) + ")         "
-            print x
+            print(x)
             next_level = list()
             for n in level:
                 if n.left:
@@ -722,7 +722,7 @@ class Regex:
         Função auxiliar que imprime os estados de composição
     """
     def print_composing(self, tree):
-        print "Composing"
+        print("Composing")
         x = ""
         for state in sorted(tree.composing_states):
             x += str(state) + ": "
@@ -731,7 +731,7 @@ class Regex:
                 if not id:
                     id = ""
                 x+= str(id)+"_"+node.value + " | "
-            print x
+            print(x)
             x = ""
 
     """
@@ -1032,16 +1032,6 @@ class FiniteAutomata:
                     rg.G[state].append(key)
                 else:
                     rg.G[state].append(key+value)
-        # if self.is_deterministic:
-        #     for state in self.states:
-        #         rg.G[state] = []
-        #         for key in self.transitions[state]:
-        #             for value in self.transitions[state][key]:
-        #                 if value in self.final_states:
-        #                     rg.G[state].append(key)
-        #                 else:
-        #                     rg.G[state].append(key+value)
-        # else:
         for state in self.K:
             rg.G[state] = []
             for key in self.transitions[state]:
@@ -1082,10 +1072,30 @@ class FiniteAutomata:
                 self.transitions[transition][symbol] = convertion[self.transitions[transition][symbol]]
             self.transitions[convertion[transition]] = self.transitions.pop(transition)
 
+    def is_sentence_recognized(self, input):
+        current_state = self.initial_state
+        if self.is_deterministic:
+            for char in input:
+                current_state = self.transitions[current_state][char]
+            return current_state in self.final_states
+
+        current_states = []
+        current_states.append(self.transitions[current_state][input[0]])
+        if len(input) > 1:
+            for char in input[1:]:
+                new_current_states = []
+                print "current_states", current_states
+                for state in current_states:
+                    new_current_states.append(self.transitions[current_state][char])
+                current_states = new_current_states
+        for state in current_states:
+            if state in self.final_states:
+                return True
+        return False
 
 
-
-
+    def generate_sentences(self, size):
+        return
 
 
 
@@ -1144,7 +1154,7 @@ class FiniteAutomata:
             pretty += line + "\n"
         pretty += hr
 
-        #print pretty
+        #print(pretty)
         return pretty
 
 

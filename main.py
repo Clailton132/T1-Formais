@@ -8,14 +8,14 @@ import pickle
 if os.path.isfile("db/reg_gram.p"):
     all_reg_grammars = pickle.load(open( "db/reg_gram.p", "rb" ))
     # Var all_reg_grammars returns: {"filename":[g.initial_state, g.G] ... }
-    #print all_reg_grammars
+    #print(all_reg_grammars)
 else:
     all_reg_grammars = {}
-    #print "File does not exist"
+    #print("File does not exist")
 
 if os.path.isfile("db/regex.p"):
     all_regex = pickle.load( open( "db/regex.p", "rb" ) )
-    #print all_regex
+    #print(all_regex)
 else:
     all_regex = {}
 
@@ -81,7 +81,7 @@ def gui_check_input():
 """
 def gui_save_grammar():
     filename = filenameEntry.get()
-    print "Save Grammar: " + str(filename)
+    print("Save Grammar: " + str(filename))
     all_reg_grammars[filename] = [g.initial_state, g.G]
     pickle.dump(all_reg_grammars, open( "db/reg_gram.p", "wb" ))
     messagebox.showinfo("Salvando", "Sua gramática foi salva com sucesso")
@@ -93,7 +93,7 @@ def gui_save_grammar():
 """
 def gui_load_grammar():
     filename = filenameEntry.get()
-    print "Load Grammar: " + str(filename)
+    print("Load Grammar: " + str(filename))
     backup = copy.deepcopy(all_reg_grammars[filename])
     g.set_initial_state(backup[0])
     g.G = backup[1]
@@ -122,7 +122,7 @@ def gui_set_regex():
 """
 def gui_save_regex():
     filename = filenameEntry.get()
-    print "Save Regex: " + str(filename)
+    print("Save Regex: " + str(filename))
     all_regex[filename] = [e.literal, e.E]
     pickle.dump(all_regex, open( "db/regex.p", "wb" ))
     messagebox.showinfo("Saving", "Your regex was saved succesfully")
@@ -134,7 +134,7 @@ def gui_save_regex():
 """
 def gui_load_regex():
     filename = filenameEntry.get()
-    print "Load Regex: " + str(filename)
+    print("Load Regex: " + str(filename))
     backup = copy.deepcopy(all_regex[filename])
     e.literal = backup[0]
     e.E = backup[1]
@@ -213,16 +213,17 @@ if option == "1":
 
 while True:
     os.system('clear')
-    print "**********************************"
-    print " Trabalho 1: Linguagens Regulares"
-    print "**********************************"
-    print "* [1] Criar Gramática Regular"
-    print "* [2] Listar Gramáticas Salvas"
-    print "* [3] Criar Expressão Regular"
-    print "* [4] Conversão Gramática Regular -> Autômato Finito"
-    print "* [5] Conversão Autômato Finito -> Gramática Regular"
-    print "* [6] Conversão Expressão Regular -> Autômato Finito"
-    print "* [9] Sair"
+    print("**********************************")
+    print(" Trabalho 1: Linguagens Regulares")
+    print("**********************************")
+    print("* [1] Criar Gramática Regular")
+    print("* [2] Listar Gramáticas Salvas")
+    print("* [3] Criar Expressão Regular")
+    print("* [4] Conversão Gramática Regular -> Autômato Finito")
+    print("* [5] Conversão Autômato Finito -> Gramática Regular")
+    print("* [6] Conversão Expressão Regular -> Autômato Finito")
+    print("* [7] Testar Sentença em AF")
+    print("* [9] Sair")
     option = raw_input("\nOpção: ")
     if option in ("9", ""):
         break
@@ -331,8 +332,8 @@ while True:
         # gr_name = raw_input("Name of the Regular Grammar filename: ")
         gr_name = 'example_1'
         my_rg = RegGram(all_reg_grammars[gr_name][1],all_reg_grammars[gr_name][0])
-        print "Initial State: " + str(my_rg.initial_state)
-        print my_rg.G
+        print("Initial State: " + str(my_rg.initial_state))
+        print(my_rg.G)
         fa = my_rg.get_eq_automata()
         pretty = fa.pretty_print()
 
@@ -349,18 +350,29 @@ while True:
 
         dfa = fa.get_deterministic()
         minimized_dfa = dfa.get_minimized()
-        # print "Equivalent Grammar"
+        # print("Equivalent Grammar")
         # # TODO: fix get_eq_reg_gram() to deterministic fa version
         new_rg = minimized_dfa.get_eq_reg_gram()
-        print new_rg.G
+        print(new_rg.G)
         pause = raw_input("...")
 
     elif option == "6":
-        # teste
         r = Regex()
         test = raw_input("Regular expression: ")
         r.set_regex(test)
-        print r.E
+        print(r.E)
         automata = r.get_equivalent_automata()
         automata.pretty_print()
+        pause = raw_input("...")
+
+    elif option == "7":
+        test = 'test_sentence'
+        rg = RegGram(all_reg_grammars[test][1],all_reg_grammars[test][0])
+        rg.show()
+        fa = rg.get_eq_automata()
+        fa.pretty_print()
+        dfa = fa.get_deterministic()
+        minimized_dfa = dfa.get_minimized()
+        sentence = raw_input("Enter sentence: ")
+        print fa.is_sentence_recognized(sentence)
         pause = raw_input("...")
