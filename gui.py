@@ -18,9 +18,10 @@ class ApplicationWidget(QtGui.QWidget):
         self.setGeometry(75, 75, 1300, 800)
         self.setWindowTitle('T1 - Linguagens Regulares')
 
-        title_font = QtGui.QFont("Times", 24, QtGui.QFont.Bold)
-        subtitle_font = QtGui.QFont("Times", 20, QtGui.QFont.Bold)
-        normal_font = QtGui.QFont("Times", 16, QtGui.QFont.Bold)
+        title_font = QtGui.QFont("Arial", 24, QtGui.QFont.Bold)
+        subtitle_font = QtGui.QFont("Arial", 20, QtGui.QFont.Bold)
+        normal_font = QtGui.QFont("Arial", 16, QtGui.QFont.Bold)
+        item_font = QtGui.QFont("Arial", 14, QtGui.QFont.Normal)
 
         grid = QtGui.QGridLayout()
         self.setLayout(grid)
@@ -90,6 +91,15 @@ class ApplicationWidget(QtGui.QWidget):
         vbox2 = QtGui.QVBoxLayout()
         vbox2.setSpacing(15)
 
+        grammar_label = QtGui.QLabel()
+        grammar_label.setText(u'Gramática Regular')
+        grammar_label.setFont(subtitle_font)
+        vbox2.addWidget(grammar_label)
+
+        """
+            Gramática Regular
+        """
+
         gr_name = 'lista2_4a'
         my_rg = RegGram(all_reg_grammars[gr_name][1],all_reg_grammars[gr_name][0])
         print("Initial State: " + str(my_rg.initial_state))
@@ -110,9 +120,12 @@ class ApplicationWidget(QtGui.QWidget):
             headers.append(key)
             for m, item in enumerate(data[key]):
                 newitem = QtGui.QTableWidgetItem(item)
+                newitem.setFont(item_font)
                 table.setItem(n, m, newitem)
 
         table.setVerticalHeaderLabels(headers)
+        for i in range(len(headers)):
+            table.verticalHeaderItem(i).setFont(normal_font)
         empty_labels = [" " for x in range(n_cols)]
         table.setHorizontalHeaderLabels(empty_labels)
 
