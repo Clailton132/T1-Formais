@@ -1,4 +1,5 @@
-#!/usr/bin/env python # -*- coding: utf-8 -*
+#!/usr/bin/env python
+# -*- coding: utf-8 -*
 from binary_tree import *
 from string import ascii_uppercase
 import copy
