@@ -509,6 +509,7 @@ class ApplicationWidget(QtGui.QWidget):
             if self.automatas[-1].is_deterministic:
                 self.g = self.automatas[-1].get_eq_reg_gram()
                 self.table.show()
+                self.grammar_label.setText(u"Gramática Regular equivalente:")
                 self.grammar_label.show()
                 self.refresh_grammar()
 

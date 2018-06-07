@@ -1054,6 +1054,11 @@ class FiniteAutomata:
             if self.states[state] == transition:
                 return state
 
+
+    """
+        Para auxiliar na criação da gramática regular equivalente,
+        são renomeados todos os estados para letras maíusculas do alfabeto
+    """
     def get_states_alphabet(self):
         convertion = {}
         self.states = {}
@@ -1073,6 +1078,9 @@ class FiniteAutomata:
                 self.transitions[transition][symbol] = convertion[self.transitions[transition][symbol]]
             self.transitions[convertion[transition]] = self.transitions.pop(transition)
 
+    """
+        Retorne se determinada sequencia (input) é aceita pelo automato
+    """
     def is_sentence_recognized(self, input):
         automata = self
         if not automata.is_deterministic:
@@ -1082,21 +1090,11 @@ class FiniteAutomata:
         for char in input:
             current_state = automata.transitions[current_state][char]
         return current_state in automata.final_states
-        # current_states = []
-        # current_states.append(self.transitions[current_state][input[0]])
-        # if len(input) > 1:
-        #     for char in input[1:]:
-        #         new_current_states = []
-        #         print "current_states", current_states
-        #         for state in current_states:
-        #             new_current_states.append(self.transitions[current_state][char])
-        #         current_states = new_current_states
-        # for state in current_states:
-        #     if state in self.final_states:
-        #         return True
-        # return False
 
 
+    """
+        Gera sentenças aceitas pelo autômato finito até um tamanho máximo n
+    """
     def generate_sentences(self, max_size):
         automata = copy.copy(self)
         if not automata.is_deterministic:
@@ -1109,6 +1107,9 @@ class FiniteAutomata:
         return list(acceptable)
 
 
+    """
+        Ajuda na recursão da geração das sentenças de tamanho máximo n
+    """
     def get_acceptable(self, size_left, current_state, sentence):
         acceptable = set()
         if size_left == 0:
@@ -1120,6 +1121,10 @@ class FiniteAutomata:
             acceptable |= (self.get_acceptable(size_left - 1, transition, new_sentence))
         return acceptable
 
+
+    """
+        Gera sentenças aceitas pelo autômato finito de tamanho EXATAMENTE n
+    """
     def get_acceptable_size_n(self, n):
         all_acceptable = self.generate_sentences(n)
         size_n_acceptable = []
