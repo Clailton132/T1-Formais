@@ -1,6 +1,6 @@
 # Regular Languages
 
-Application that manipulates and verify properties of __Regular Grammars, Regular Expressions__ and __Finite Automatas__.
+Application that manipulates regular languages, using __Regular Grammars__, __Regular Expressions__ and __Finite Automata__
 
 ---
 ## Authors
