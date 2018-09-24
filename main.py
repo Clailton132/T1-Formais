@@ -1,13 +1,17 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-from models import *
+
+from finite_automata import FiniteAutomata
+from reg_gram import RegGram
+from regex import Regex
+
 import os, pprint, copy
 import pickle
 
 import sys
-from PyQt4 import QtGui, QtCore
+from PyQt5 import QtGui, QtWidgets, QtCore
 
-class ApplicationWidget(QtGui.QWidget):
+class ApplicationWidget(QtWidgets.QWidget):
 
     def __init__(self):
         super(ApplicationWidget, self).__init__()
@@ -28,7 +32,7 @@ class ApplicationWidget(QtGui.QWidget):
         self.normal_font = QtGui.QFont("Arial", 16, QtGui.QFont.Normal)
         self.item_font = QtGui.QFont("Arial", 14, QtGui.QFont.Normal)
 
-        grid = QtGui.QGridLayout()
+        grid = QtWidgets.QGridLayout()
         self.setLayout(grid)
 
         """
@@ -39,76 +43,76 @@ class ApplicationWidget(QtGui.QWidget):
         --------------------------------------------------------
         """
 
-        vbox_left = QtGui.QVBoxLayout()
+        vbox_left = QtWidgets.QVBoxLayout()
         vbox_left.setSpacing(15)
 
-        vbox_left_label = QtGui.QLabel()
-        vbox_left_label.setText(u'Linguagens Regulares')
+        vbox_left_label = QtWidgets.QLabel()
+        vbox_left_label.setText('Linguagens Regulares')
         vbox_left_label.setFont(self.title_font)
         vbox_left.addWidget(vbox_left_label)
 
         self.grammar_dialog = CreateGrammarWidget(self)
 
-        btnCreateGrammar = QtGui.QPushButton(u'Criar/Editar Gramática Regular', self)
+        btnCreateGrammar = QtWidgets.QPushButton('Criar/Editar Gramática Regular', self)
         btnCreateGrammar.resize(btnCreateGrammar.sizeHint())
         btnCreateGrammar.clicked.connect(self.create_grammar_signal)
         vbox_left.addWidget(btnCreateGrammar)
 
         self.regex_dialog = CreateRegexWidget(self)
 
-        btnCreateRegex = QtGui.QPushButton(u'Criar/Editar Expressão Regular', self)
+        btnCreateRegex = QtWidgets.QPushButton('Criar/Editar Expressão Regular', self)
         btnCreateRegex.resize(btnCreateRegex.sizeHint())
         btnCreateRegex.clicked.connect(self.create_regex_signal)
         vbox_left.addWidget(btnCreateRegex)
 
-        current_actions_label = QtGui.QLabel()
-        current_actions_label.setText(u'Ações com o modelo atual')
+        current_actions_label = QtWidgets.QLabel()
+        current_actions_label.setText('Ações com o modelo atual')
         current_actions_label.setFont(self.subtitle_font)
         vbox_left.addWidget(current_actions_label)
 
-        self.btnConvertToAutomata = QtGui.QPushButton(u'Conversão para Autômato Finito', self)
+        self.btnConvertToAutomata = QtWidgets.QPushButton('Conversão para Autômato Finito', self)
         self.btnConvertToAutomata.resize(self.btnConvertToAutomata.sizeHint())
         self.btnConvertToAutomata.clicked.connect(self.convert_to_automata_signal)
         vbox_left.addWidget(self.btnConvertToAutomata)
 
-        btnDeterminize = QtGui.QPushButton(u'Determinizar AF', self)
+        btnDeterminize = QtWidgets.QPushButton('Determinizar AF', self)
         btnDeterminize.resize(btnDeterminize.sizeHint())
         btnDeterminize.clicked.connect(self.determinize_automata_signal)
         vbox_left.addWidget(btnDeterminize)
 
-        btnMinimize = QtGui.QPushButton(u'Minimizar AF', self)
+        btnMinimize = QtWidgets.QPushButton('Minimizar AF', self)
         btnMinimize.resize(btnMinimize.sizeHint())
         btnMinimize.clicked.connect(self.minimize_automata_signal)
         vbox_left.addWidget(btnMinimize)
 
-        self.btnGetGrammar = QtGui.QPushButton(u'Converter AF para GR', self)
+        self.btnGetGrammar = QtWidgets.QPushButton('Converter AF para GR', self)
         self.btnGetGrammar.resize(self.btnGetGrammar.sizeHint())
         self.btnGetGrammar.clicked.connect(self.get_equivalent_reg_gram_signal)
         vbox_left.addWidget(self.btnGetGrammar)
 
 
-        sentence_generate_label = QtGui.QLabel()
-        sentence_generate_label.setText(u'Geração de sentenças de tamanho n')
+        sentence_generate_label = QtWidgets.QLabel()
+        sentence_generate_label.setText('Geração de sentenças de tamanho n')
         sentence_generate_label.setFont(self.subtitle_font)
         vbox_left.addWidget(sentence_generate_label)
-        self.generate_textbox = QtGui.QLineEdit()
-        self.generate_textbox.setPlaceholderText(u'Tamanho n (ex: 5)')
+        self.generate_textbox = QtWidgets.QLineEdit()
+        self.generate_textbox.setPlaceholderText('Tamanho n (ex: 5)')
         vbox_left.addWidget(self.generate_textbox)
-        btn_generate_sentences = QtGui.QPushButton(u'Gerar sentenças', self)
+        btn_generate_sentences = QtWidgets.QPushButton('Gerar sentenças', self)
         btn_generate_sentences.resize(btn_generate_sentences.sizeHint())
         btn_generate_sentences.clicked.connect(self.generate_sentences_signal)
         vbox_left.addWidget(btn_generate_sentences)
 
-        sentence_test_label = QtGui.QLabel()
-        sentence_test_label.setText(u'Teste de Sentença')
+        sentence_test_label = QtWidgets.QLabel()
+        sentence_test_label.setText('Teste de Sentença')
         sentence_test_label.setFont(self.subtitle_font)
         vbox_left.addWidget(sentence_test_label)
 
-        self.textbox = QtGui.QLineEdit()
-        self.textbox.setPlaceholderText(u'ex: abba')
+        self.textbox = QtWidgets.QLineEdit()
+        self.textbox.setPlaceholderText('ex: abba')
         vbox_left.addWidget(self.textbox)
 
-        btn_sentence_test = QtGui.QPushButton('Testar', self)
+        btn_sentence_test = QtWidgets.QPushButton('Testar', self)
         btn_sentence_test.resize(btn_sentence_test.sizeHint())
         btn_sentence_test.clicked.connect(self.sentence_test_signal)
         vbox_left.addWidget(btn_sentence_test)
@@ -124,15 +128,15 @@ class ApplicationWidget(QtGui.QWidget):
         --------------------------------------------------------
         """
 
-        vbox_center = QtGui.QVBoxLayout()
+        vbox_center = QtWidgets.QVBoxLayout()
         vbox_center.setSpacing(15)
 
         """
             Expressão Regular
         """
 
-        self.regex_label = QtGui.QLabel()
-        self.regex_label.setText(u'Expressão Regular')
+        self.regex_label = QtWidgets.QLabel()
+        self.regex_label.setText('Expressão Regular')
         self.regex_label.setFont(self.subtitle_font)
         vbox_center.addWidget(self.regex_label)
         self.regex_label.hide()
@@ -141,46 +145,46 @@ class ApplicationWidget(QtGui.QWidget):
             Gramática Regular
         """
 
-        self.grammar_label = QtGui.QLabel()
-        self.grammar_label.setText(u'Gramática Regular')
+        self.grammar_label = QtWidgets.QLabel()
+        self.grammar_label.setText('Gramática Regular')
         self.grammar_label.setFont(self.subtitle_font)
         vbox_center.addWidget(self.grammar_label)
         self.grammar_label.hide()
 
-        self.initial_panel_label = QtGui.QLabel()
-        self.initial_panel_label.setText(u'Para começar, crie/carregue uma Gramática Regular ou Expressão regular')
+        self.initial_panel_label = QtWidgets.QLabel()
+        self.initial_panel_label.setText('Para começar, crie/carregue uma Gramática Regular ou Expressão regular')
         self.initial_panel_label.setFont(self.normal_font)
         vbox_center.addWidget(self.initial_panel_label)
 
-        self.table = QtGui.QTableWidget(self)
+        self.table = QtWidgets.QTableWidget(self)
         vbox_center.addWidget(self.table)
 
         """
             Autômatos Finitos
         """
-        self.automata_label = QtGui.QLabel()
-        self.automata_label.setText(u'Autômato Finito Equivalente')
+        self.automata_label = QtWidgets.QLabel()
+        self.automata_label.setText('Autômato Finito Equivalente')
         self.automata_label.setFont(self.subtitle_font)
         vbox_center.addWidget(self.automata_label)
         self.automata_label.hide()
 
-        self.table_automata = QtGui.QTableWidget(self)
+        self.table_automata = QtWidgets.QTableWidget(self)
         vbox_center.addWidget(self.table_automata)
         self.table_automata.hide()
 
-        self.regex_view = QtGui.QLabel()
-        self.regex_view.setText(u'Regex: ')
+        self.regex_view = QtWidgets.QLabel()
+        self.regex_view.setText('Regex: ')
         self.regex_view.setFont(self.normal_font)
         vbox_center.addWidget(self.regex_view)
         self.regex_view.hide()
 
 
-        self.generated_sentences_label = QtGui.QLabel()
-        self.generated_sentences_label.setText(u'Sentenças Geradas: ')
+        self.generated_sentences_label = QtWidgets.QLabel()
+        self.generated_sentences_label.setText('Sentenças Geradas: ')
         self.generated_sentences_label.setFont(self.subtitle_2_font)
         vbox_center.addWidget(self.generated_sentences_label)
         self.generated_sentences_label.hide()
-        self.table_generated = QtGui.QTableWidget(self)
+        self.table_generated = QtWidgets.QTableWidget(self)
         vbox_center.addWidget(self.table_generated)
         self.table_generated.hide()
 
@@ -196,50 +200,50 @@ class ApplicationWidget(QtGui.QWidget):
         """
 
 
-        vbox_right = QtGui.QVBoxLayout()
+        vbox_right = QtWidgets.QVBoxLayout()
         vbox_right.setSpacing(15)
 
-        saved_grammar_label = QtGui.QLabel()
-        saved_grammar_label.setText(u'Gramáticas Salvas')
+        saved_grammar_label = QtWidgets.QLabel()
+        saved_grammar_label.setText('Gramáticas Salvas')
         saved_grammar_label.setFont(self.subtitle_font)
         vbox_right.addWidget(saved_grammar_label)
 
-        self.grammar_list = QtGui.QListWidget()
-        all_grammar = all_reg_grammars.keys()
+        self.grammar_list = QtWidgets.QListWidget()
+        all_grammar = list(all_reg_grammars.keys())
         self.grammar_list.addItems(all_grammar)
         self.grammar_list.itemClicked.connect(self.list_grammar_clicked)
 
         vbox_right.addWidget(self.grammar_list)
 
-        btnRefreshGrammarList = QtGui.QPushButton(u'Atualizar lista', self)
+        btnRefreshGrammarList = QtWidgets.QPushButton('Atualizar lista', self)
         btnRefreshGrammarList.resize(btnRefreshGrammarList.sizeHint())
         btnRefreshGrammarList.clicked.connect(self.refresh_grammar_list)
         vbox_right.addWidget(btnRefreshGrammarList)
 
-        btnGetGrammar = QtGui.QPushButton(u'Carregar Gramática', self)
+        btnGetGrammar = QtWidgets.QPushButton('Carregar Gramática', self)
         btnGetGrammar.resize(btnGetGrammar.sizeHint())
         btnGetGrammar.clicked.connect(self.get_grammar_from_list)
         vbox_right.addWidget(btnGetGrammar)
 
 
 
-        saved_regex_label = QtGui.QLabel()
-        saved_regex_label.setText(u'Expressões Regulares Salvas')
+        saved_regex_label = QtWidgets.QLabel()
+        saved_regex_label.setText('Expressões Regulares Salvas')
         saved_regex_label.setFont(self.subtitle_font)
         vbox_right.addWidget(saved_regex_label)
 
-        self.regex_list = QtGui.QListWidget()
-        list_all_regex = all_regex.keys()
+        self.regex_list = QtWidgets.QListWidget()
+        list_all_regex = list(all_regex.keys())
         self.regex_list.addItems(list_all_regex)
 
         vbox_right.addWidget(self.regex_list)
 
-        btnRefreshRegexList = QtGui.QPushButton(u'Atualizar lista', self)
+        btnRefreshRegexList = QtWidgets.QPushButton('Atualizar lista', self)
         btnRefreshRegexList.resize(btnRefreshRegexList.sizeHint())
         btnRefreshRegexList.clicked.connect(self.refresh_regex_list)
         vbox_right.addWidget(btnRefreshRegexList)
 
-        btnGetRegex = QtGui.QPushButton(u'Carregar Expressão Regular', self)
+        btnGetRegex = QtWidgets.QPushButton('Carregar Expressão Regular', self)
         btnGetRegex.resize(btnGetRegex.sizeHint())
         btnGetRegex.clicked.connect(self.get_regex_from_list)
         vbox_right.addWidget(btnGetRegex)
@@ -263,7 +267,7 @@ class ApplicationWidget(QtGui.QWidget):
 
     def list_grammar_clicked(self,item):
         pass
-      # QtGui.QMessageBox.information(self, "ListWidget", "You clicked: "+item.text())
+      # QtWidgets.QMessageBox.information(self, "ListWidget", "You clicked: "+item.text())
 
     def create_grammar_signal(self):
         self.grammar_dialog.show()
@@ -274,19 +278,19 @@ class ApplicationWidget(QtGui.QWidget):
     def refresh_grammar_list(self):
         if os.path.isfile("db/reg_gram.p"):
             all_reg_grammars = pickle.load(open( "db/reg_gram.p", "rb" ))
-            print all_reg_grammars.keys()
+            print(list(all_reg_grammars.keys()))
             self.grammar_list.clear()
-            # self.grammar_list = QtGui.QListWidget()
-            all_grammar = all_reg_grammars.keys()
+            # self.grammar_list = QtWidgets.QListWidget()
+            all_grammar = list(all_reg_grammars.keys())
             self.grammar_list.addItems(all_grammar)
 
     def refresh_regex_list(self):
         if os.path.isfile("db/regex.p"):
             all_regex = pickle.load( open( "db/regex.p", "rb" ) )
-            print all_regex.keys()
+            print(list(all_regex.keys()))
             self.regex_list.clear()
-            # self.regex_list = QtGui.QListWidget()
-            all_regex = all_regex.keys()
+            # self.regex_list = QtWidgets.QListWidget()
+            all_regex = list(all_regex.keys())
             self.regex_list.addItems(all_regex)
 
     def refresh_grammar(self):
@@ -294,10 +298,10 @@ class ApplicationWidget(QtGui.QWidget):
         self.table.setColumnCount(0)
         data = self.g.G
         initial_state = self.g.initial_state
-        print data
+        print(data)
         if data:
-            n_rows = len(data.keys())
-            lengths = [len(x) for x in data.values()]
+            n_rows = len(list(data.keys()))
+            lengths = [len(x) for x in list(data.values())]
             n_cols = max(lengths)
 
             self.table.setRowCount(n_rows)
@@ -311,7 +315,7 @@ class ApplicationWidget(QtGui.QWidget):
             for n, key in enumerate(ordered_data):
                 headers.append(key)
                 for m, item in enumerate(data[key]):
-                    newitem = QtGui.QTableWidgetItem(item)
+                    newitem = QtWidgets.QTableWidgetItem(item)
                     newitem.setFont(self.item_font)
                     newitem.setFlags(QtCore.Qt.ItemIsEnabled)
                     self.table.setItem(n, m, newitem)
@@ -330,9 +334,9 @@ class ApplicationWidget(QtGui.QWidget):
             all_reg_grammars = pickle.load(open( "db/reg_gram.p", "rb" ))
             [self.g.initial_state, self.g.G] = all_reg_grammars[filename]
             self.grammar_label.show()
-            self.grammar_label.setText(u'Gramática Regular: ' + str(filename))
+            self.grammar_label.setText('Gramática Regular: ' + str(filename))
             self.initial_panel_label.setFont(self.item_font)
-            self.initial_panel_label.setText(u'A partir desta Gramática Regular, você pode realizar a conversão para Autômato Finito na barra lateral à esquerda')
+            self.initial_panel_label.setText('A partir desta Gramática Regular, você pode realizar a conversão para Autômato Finito na barra lateral à esquerda')
             self.regex_view.hide()
             self.table.show()
             self.is_current_a_grammar = True
@@ -352,10 +356,10 @@ class ApplicationWidget(QtGui.QWidget):
                 [self.e.literal, self.e.E] = all_regex[filename]
             self.grammar_label.hide()
             self.regex_label.show()
-            self.regex_label.setText(u'Expressão Regular: ' + str(filename))
+            self.regex_label.setText('Expressão Regular: ' + str(filename))
             self.regex_view.setFont(self.item_font)
             self.initial_panel_label.setFont(self.item_font)
-            self.initial_panel_label.setText(u'A partir desta Expressão Regular, você pode realizar a conversão para Autômato Finito na barra lateral à esquerda')
+            self.initial_panel_label.setText('A partir desta Expressão Regular, você pode realizar a conversão para Autômato Finito na barra lateral à esquerda')
             self.table.hide()
             self.regex_view.setText(str("Expressão Regular: " + self.e.literal + "\nEstrutura:" + str(self.e.E)).decode("utf-8"))
             self.regex_view.show()
@@ -374,31 +378,31 @@ class ApplicationWidget(QtGui.QWidget):
             automata = self.g.get_eq_automata()
         elif self.e.E:
             automata = self.e.get_equivalent_automata()
-        print "automata"
+        print("automata")
         self.automatas.append(automata)
         self.show_automata()
         self.automata_label.show()
         self.table_automata.show()
-        print automata.pretty_print()
+        print(automata.pretty_print())
 
     def determinize_automata_signal(self):
         automata = self.automatas[-1].get_deterministic()
         self.automatas.append(automata)
         self.show_automata()
-        self.automata_label.setText(u"Autômato Finito Determinístico Equivalente")
+        self.automata_label.setText("Autômato Finito Determinístico Equivalente")
         self.automata_label.show()
         self.table_automata.show()
-        print automata.pretty_print()
+        print(automata.pretty_print())
 
     def minimize_automata_signal(self):
         if self.automatas[-1].is_deterministic:
             automata = self.automatas[-1].get_minimized()
             self.automatas.append(automata)
             self.show_automata()
-            self.automata_label.setText(u"Autômato Finito Determinístico Mínimo Equivalente")
+            self.automata_label.setText("Autômato Finito Determinístico Mínimo Equivalente")
             self.automata_label.show()
             self.table_automata.show()
-            print automata.pretty_print()
+            print(automata.pretty_print())
 
     def show_automata(self):
         self.table_automata.setRowCount(0)
@@ -406,7 +410,7 @@ class ApplicationWidget(QtGui.QWidget):
         automata = self.automatas[-1]
         transitions = automata.transitions
         initial_state = automata.initial_state
-        print transitions
+        print(transitions)
         if transitions:
             n_rows = len(automata.K)
             n_cols = len(automata.sigma)
@@ -419,8 +423,8 @@ class ApplicationWidget(QtGui.QWidget):
             ordered_transitions.remove(initial_state)
             ordered_transitions = [initial_state] + ordered_transitions
 
-            print "ordered_transitions", ordered_transitions
-            print "transitions", transitions
+            print("ordered_transitions", ordered_transitions)
+            print("transitions", transitions)
 
             for n, key in enumerate(ordered_transitions):
                 h = "  " + key
@@ -429,13 +433,13 @@ class ApplicationWidget(QtGui.QWidget):
                 headers.append(h)
                 for m, item in enumerate(sorted(automata.sigma)):
                     if automata.is_deterministic:
-                        newitem = QtGui.QTableWidgetItem(transitions[key][item])
+                        newitem = QtWidgets.QTableWidgetItem(transitions[key][item])
                     else:
                         final_string = ""
                         for state in transitions[key][item]:
                             final_string += (state + ",")
                         final_string = final_string[:-1]
-                        newitem = QtGui.QTableWidgetItem(final_string)
+                        newitem = QtWidgets.QTableWidgetItem(final_string)
                         newitem.setFont(self.item_font)
                     newitem.setFlags(QtCore.Qt.ItemIsEnabled)
                     self.table_automata.setItem(n, m, newitem)
@@ -458,11 +462,11 @@ class ApplicationWidget(QtGui.QWidget):
             automata = self.automatas[-1]
             sentence = str(self.textbox.text())
             if automata.is_sentence_recognized(sentence):
-                QtGui.QMessageBox.information(self, u"Teste de sentença", u"Sua sentença é aceita pelo AF")
+                QtWidgets.QMessageBox.information(self, "Teste de sentença", "Sua sentença é aceita pelo AF")
             else:
-                QtGui.QMessageBox.information(self, u"Teste de sentença", u"Sua sentença NÃO é aceita pelo AF")
+                QtWidgets.QMessageBox.information(self, "Teste de sentença", "Sua sentença NÃO é aceita pelo AF")
         else:
-            QtGui.QMessageBox.information(self, u"Erro", u"Você deve gerar o autômato finito equivalente antes disso")
+            QtWidgets.QMessageBox.information(self, "Erro", "Você deve gerar o autômato finito equivalente antes disso")
 
 
     def generate_sentences_signal(self):
@@ -472,7 +476,7 @@ class ApplicationWidget(QtGui.QWidget):
             size = int(self.generate_textbox.text())
             acceptable = automata.get_acceptable_size_n(size)
         else:
-            QtGui.QMessageBox.information(self, u"Erro", u"Você deve gerar o autômato finito equivalente antes disso")
+            QtWidgets.QMessageBox.information(self, "Erro", "Você deve gerar o autômato finito equivalente antes disso")
 
         self.table_generated.setRowCount(0)
         self.table_generated.setColumnCount(0)
@@ -485,7 +489,7 @@ class ApplicationWidget(QtGui.QWidget):
             self.table_generated.setColumnCount(n_cols)
 
             for n, sentence in enumerate(acceptable):
-                newitem = QtGui.QTableWidgetItem(sentence)
+                newitem = QtWidgets.QTableWidgetItem(sentence)
                 newitem.setFont(self.item_font)
                 newitem.setFlags(QtCore.Qt.ItemIsEnabled)
                 self.table_generated.setItem(n, 0, newitem)
@@ -509,14 +513,14 @@ class ApplicationWidget(QtGui.QWidget):
             if self.automatas[-1].is_deterministic:
                 self.g = self.automatas[-1].get_eq_reg_gram()
                 self.table.show()
-                self.grammar_label.setText(u"Gramática Regular equivalente:")
+                self.grammar_label.setText("Gramática Regular equivalente:")
                 self.grammar_label.show()
                 self.refresh_grammar()
 
 
 
 
-class CreateGrammarWidget(QtGui.QWidget):
+class CreateGrammarWidget(QtWidgets.QWidget):
 
     def __init__(self, parent=None):
         super(CreateGrammarWidget, self).__init__()
@@ -526,7 +530,7 @@ class CreateGrammarWidget(QtGui.QWidget):
 
     def initUI(self):
         self.setGeometry(75, 75, 800, 800)
-        self.setWindowTitle(u'Gramáticas Regulares')
+        self.setWindowTitle('Gramáticas Regulares')
 
         self.title_font = QtGui.QFont("Arial", 24, QtGui.QFont.Bold)
         self.subtitle_font = QtGui.QFont("Arial", 20, QtGui.QFont.Bold)
@@ -534,16 +538,16 @@ class CreateGrammarWidget(QtGui.QWidget):
         self.normal_font = QtGui.QFont("Arial", 16, QtGui.QFont.Normal)
         self.item_font = QtGui.QFont("Arial", 14, QtGui.QFont.Normal)
 
-        grid = QtGui.QGridLayout()
+        grid = QtWidgets.QGridLayout()
         self.setLayout(grid)
 
-        vbox_left = QtGui.QVBoxLayout()
+        vbox_left = QtWidgets.QVBoxLayout()
         vbox_left.setSpacing(15)
-        vbox_center = QtGui.QVBoxLayout()
+        vbox_center = QtWidgets.QVBoxLayout()
         vbox_center.setSpacing(15)
 
-        vbox_left_label = QtGui.QLabel()
-        vbox_left_label.setText(u'Gramáticas Regulares')
+        vbox_left_label = QtWidgets.QLabel()
+        vbox_left_label.setText('Gramáticas Regulares')
         vbox_left_label.setFont(self.title_font)
         vbox_left.addWidget(vbox_left_label)
 
@@ -552,75 +556,75 @@ class CreateGrammarWidget(QtGui.QWidget):
         # print("Initial State: " + str(my_rg.initial_state))
         # print(my_rg.G)
 
-        self.table = QtGui.QTableWidget(self)
+        self.table = QtWidgets.QTableWidget(self)
         vbox_left.addWidget(self.table)
 
-        vbox_left_label = QtGui.QLabel()
-        vbox_left_label.setText(u'Ações')
+        vbox_left_label = QtWidgets.QLabel()
+        vbox_left_label.setText('Ações')
         vbox_left_label.setFont(self.subtitle_2_font)
         vbox_left.addWidget(vbox_left_label)
 
-        production_grid = QtGui.QGridLayout()
+        production_grid = QtWidgets.QGridLayout()
 
-        self.A_textbox = QtGui.QLineEdit()
-        self.A_textbox.setPlaceholderText(u'ex: \"S\"')
+        self.A_textbox = QtWidgets.QLineEdit()
+        self.A_textbox.setPlaceholderText('ex: \"S\"')
         production_grid.addWidget(self.A_textbox, 0,0)
 
-        arrow_label = QtGui.QLabel()
-        arrow_label.setText(u'----->')
+        arrow_label = QtWidgets.QLabel()
+        arrow_label.setText('----->')
         arrow_label.setFont(self.title_font)
         production_grid.addWidget(arrow_label, 0,1)
 
-        self.B_textbox = QtGui.QLineEdit()
-        self.B_textbox.setPlaceholderText(u'ex: \"aS\"')
+        self.B_textbox = QtWidgets.QLineEdit()
+        self.B_textbox.setPlaceholderText('ex: \"aS\"')
         production_grid.addWidget(self.B_textbox, 0,2)
 
         vbox_left.addLayout(production_grid)
 
-        btnAddRule = QtGui.QPushButton(u'Adicionar regra à produção', self)
+        btnAddRule = QtWidgets.QPushButton('Adicionar regra à produção', self)
         btnAddRule.resize(btnAddRule.sizeHint())
         btnAddRule.clicked.connect(self.signal_add_rule)
         vbox_left.addWidget(btnAddRule)
 
-        btnRemoveRule = QtGui.QPushButton(u'Remover regra da produção', self)
+        btnRemoveRule = QtWidgets.QPushButton('Remover regra da produção', self)
         btnRemoveRule.resize(btnRemoveRule.sizeHint())
         btnRemoveRule.clicked.connect(self.signal_remove_rule)
         vbox_left.addWidget(btnRemoveRule)
 
         vbox_left.addStretch()
 
-        vbox_center_label = QtGui.QLabel()
-        vbox_center_label.setText(u'Salvar Gramática')
+        vbox_center_label = QtWidgets.QLabel()
+        vbox_center_label.setText('Salvar Gramática')
         vbox_center_label.setFont(self.subtitle_font)
         vbox_center.addWidget(vbox_center_label)
 
-        filename_label = QtGui.QLabel()
-        filename_label.setText(u'Nome do arquivo')
+        filename_label = QtWidgets.QLabel()
+        filename_label.setText('Nome do arquivo')
         filename_label.setFont(self.subtitle_2_font)
         vbox_center.addWidget(filename_label)
 
-        self.save_textbox = QtGui.QLineEdit()
-        self.save_textbox.setPlaceholderText(u'ex: \"gramatica_1\"')
+        self.save_textbox = QtWidgets.QLineEdit()
+        self.save_textbox.setPlaceholderText('ex: \"gramatica_1\"')
         vbox_center.addWidget(self.save_textbox)
 
-        btn_save_grammar = QtGui.QPushButton(u'Salvar', self)
+        btn_save_grammar = QtWidgets.QPushButton('Salvar', self)
         btn_save_grammar.resize(btn_save_grammar.sizeHint())
         btn_save_grammar.clicked.connect(self.signal_save_grammar)
         vbox_center.addWidget(btn_save_grammar)
 
-        load_grammar_label = QtGui.QLabel()
-        load_grammar_label.setText(u'Carregar nova Gramática')
+        load_grammar_label = QtWidgets.QLabel()
+        load_grammar_label.setText('Carregar nova Gramática')
         load_grammar_label.setFont(self.subtitle_2_font)
         vbox_center.addWidget(load_grammar_label)
 
-        self.grammar_list = QtGui.QListWidget()
-        all_grammar = all_reg_grammars.keys()
+        self.grammar_list = QtWidgets.QListWidget()
+        all_grammar = list(all_reg_grammars.keys())
         self.grammar_list.addItems(all_grammar)
         self.grammar_list.itemClicked.connect(self.list_grammar_clicked)
 
         vbox_center.addWidget(self.grammar_list)
 
-        btn_load_grammar = QtGui.QPushButton(u'Carregar', self)
+        btn_load_grammar = QtWidgets.QPushButton('Carregar', self)
         btn_load_grammar.resize(btn_load_grammar.sizeHint())
         btn_load_grammar.clicked.connect(self.signal_load_grammar)
         vbox_center.addWidget(btn_load_grammar)
@@ -639,10 +643,10 @@ class CreateGrammarWidget(QtGui.QWidget):
         self.table.setColumnCount(0)
         data = self.g.G
         initial_state = self.g.initial_state
-        print data
+        print(data)
         if data:
-            n_rows = len(data.keys())
-            lengths = [len(x) for x in data.values()]
+            n_rows = len(list(data.keys()))
+            lengths = [len(x) for x in list(data.values())]
             n_cols = max(lengths)
 
             self.table.setRowCount(n_rows)
@@ -656,7 +660,7 @@ class CreateGrammarWidget(QtGui.QWidget):
             for n, key in enumerate(ordered_data):
                 headers.append(key)
                 for m, item in enumerate(data[key]):
-                    newitem = QtGui.QTableWidgetItem(item)
+                    newitem = QtWidgets.QTableWidgetItem(item)
                     newitem.setFont(self.item_font)
                     newitem.setFlags(QtCore.Qt.ItemIsEnabled)
                     self.table.setItem(n, m, newitem)
@@ -672,10 +676,10 @@ class CreateGrammarWidget(QtGui.QWidget):
     def refresh_grammar_list(self):
         if os.path.isfile("db/reg_gram.p"):
             all_reg_grammars = pickle.load(open( "db/reg_gram.p", "rb" ))
-            print all_reg_grammars.keys()
+            print(list(all_reg_grammars.keys()))
             self.grammar_list.clear()
-            # self.grammar_list = QtGui.QListWidget()
-            all_grammar = all_reg_grammars.keys()
+            # self.grammar_list = QtWidgets.QListWidget()
+            all_grammar = list(all_reg_grammars.keys())
             self.grammar_list.addItems(all_grammar)
 
 
@@ -695,7 +699,7 @@ class CreateGrammarWidget(QtGui.QWidget):
         else:
             if aux:
                 name = aux.decode("utf-8")
-                QtGui.QMessageBox.information(self, "Erro", name)
+                QtWidgets.QMessageBox.information(self, "Erro", name)
         # newEntry2.delete(0, END)
         return
 
@@ -710,7 +714,7 @@ class CreateGrammarWidget(QtGui.QWidget):
         self.refresh_grammar()
         # else:
             # name = aux.decode("utf-8")
-            # QtGui.QMessageBox.information(self, "Erro", name)
+            # QtWidgets.QMessageBox.information(self, "Erro", name)
         # newEntry2.delete(0, END)
         return
 
@@ -726,12 +730,12 @@ class CreateGrammarWidget(QtGui.QWidget):
     """
     def signal_save_grammar(self):
         filename = str(self.save_textbox.text())
-        print("Save Grammar: " + str(filename))
+        print(("Save Grammar: " + str(filename)))
         all_reg_grammars[filename] = [self.g.initial_state, self.g.G]
         pickle.dump(all_reg_grammars, open( "db/reg_gram.p", "wb" ))
         self.refresh_grammar_list()
-        QtGui.QMessageBox.information(self, u'Salvando', u'Sua gramática \'' + filename + u'\' foi salva com sucesso')
-        QtGui.QMessageBox.information(self, u'Dica', u'Acesse novamente a tela inicial e selecione sua Gramática para manipulações')
+        QtWidgets.QMessageBox.information(self, 'Salvando', 'Sua gramática \'' + filename + '\' foi salva com sucesso')
+        QtWidgets.QMessageBox.information(self, 'Dica', 'Acesse novamente a tela inicial e selecione sua Gramática para manipulações')
         # filenameEntry.delete(0, END)
         return
 
@@ -750,11 +754,11 @@ class CreateGrammarWidget(QtGui.QWidget):
 
     def list_grammar_clicked(self,item):
         pass
-        # QtGui.QMessageBox.information(self, "ListWidget", "You clicked: "+item.text())
+        # QtWidgets.QMessageBox.information(self, "ListWidget", "You clicked: "+item.text())
 
 
 
-class CreateRegexWidget(QtGui.QWidget):
+class CreateRegexWidget(QtWidgets.QWidget):
 
     def __init__(self, parent=None):
         super(CreateRegexWidget, self).__init__()
@@ -764,7 +768,7 @@ class CreateRegexWidget(QtGui.QWidget):
 
     def initUI(self):
         self.setGeometry(75, 75, 800, 800)
-        self.setWindowTitle(u'Expressões Regulares')
+        self.setWindowTitle('Expressões Regulares')
 
         self.title_font = QtGui.QFont("Arial", 24, QtGui.QFont.Bold)
         self.subtitle_font = QtGui.QFont("Arial", 20, QtGui.QFont.Bold)
@@ -772,80 +776,80 @@ class CreateRegexWidget(QtGui.QWidget):
         self.normal_font = QtGui.QFont("Arial", 16, QtGui.QFont.Normal)
         self.item_font = QtGui.QFont("Arial", 14, QtGui.QFont.Normal)
 
-        grid = QtGui.QGridLayout()
+        grid = QtWidgets.QGridLayout()
         self.setLayout(grid)
 
-        vbox_left = QtGui.QVBoxLayout()
+        vbox_left = QtWidgets.QVBoxLayout()
         vbox_left.setSpacing(15)
-        vbox_center = QtGui.QVBoxLayout()
+        vbox_center = QtWidgets.QVBoxLayout()
         vbox_center.setSpacing(15)
 
-        vbox_left_label = QtGui.QLabel()
-        vbox_left_label.setText(u'Expressões Regulares')
+        vbox_left_label = QtWidgets.QLabel()
+        vbox_left_label.setText('Expressões Regulares')
         vbox_left_label.setFont(self.title_font)
         vbox_left.addWidget(vbox_left_label)
 
 
-        self.regex_literal_label = QtGui.QLabel()
-        self.regex_literal_label.setText(u'Expressão Regular: __')
+        self.regex_literal_label = QtWidgets.QLabel()
+        self.regex_literal_label.setText('Expressão Regular: __')
         self.regex_literal_label.setFont(self.item_font)
         vbox_left.addWidget(self.regex_literal_label)
 
-        self.regex_e_label = QtGui.QLabel()
-        self.regex_e_label.setText(u'Estrutura: __')
+        self.regex_e_label = QtWidgets.QLabel()
+        self.regex_e_label.setText('Estrutura: __')
         self.regex_e_label.setFont(self.item_font)
         vbox_left.addWidget(self.regex_e_label)
 
-        vbox_left_label = QtGui.QLabel()
-        vbox_left_label.setText(u'Ações')
+        vbox_left_label = QtWidgets.QLabel()
+        vbox_left_label.setText('Ações')
         vbox_left_label.setFont(self.subtitle_2_font)
         vbox_left.addWidget(vbox_left_label)
 
 
-        self.Exp_textbox = QtGui.QLineEdit()
-        self.Exp_textbox.setPlaceholderText(u'ex: \"a(ab|ba)*c?\"')
+        self.Exp_textbox = QtWidgets.QLineEdit()
+        self.Exp_textbox.setPlaceholderText('ex: \"a(ab|ba)*c?\"')
         vbox_left.addWidget(self.Exp_textbox)
 
 
-        btnAddRule = QtGui.QPushButton(u'Atribuir Expressão Regular', self)
+        btnAddRule = QtWidgets.QPushButton('Atribuir Expressão Regular', self)
         btnAddRule.resize(btnAddRule.sizeHint())
         btnAddRule.clicked.connect(self.signal_set_regex)
         vbox_left.addWidget(btnAddRule)
 
         vbox_left.addStretch()
 
-        vbox_center_label = QtGui.QLabel()
-        vbox_center_label.setText(u'Salvar Expressão Regular')
+        vbox_center_label = QtWidgets.QLabel()
+        vbox_center_label.setText('Salvar Expressão Regular')
         vbox_center_label.setFont(self.subtitle_font)
         vbox_center.addWidget(vbox_center_label)
 
-        filename_label = QtGui.QLabel()
-        filename_label.setText(u'Nome do arquivo')
+        filename_label = QtWidgets.QLabel()
+        filename_label.setText('Nome do arquivo')
         filename_label.setFont(self.subtitle_2_font)
         vbox_center.addWidget(filename_label)
 
-        self.save_textbox = QtGui.QLineEdit()
-        self.save_textbox.setPlaceholderText(u'ex: \"regex_1\"')
+        self.save_textbox = QtWidgets.QLineEdit()
+        self.save_textbox.setPlaceholderText('ex: \"regex_1\"')
         vbox_center.addWidget(self.save_textbox)
 
-        btn_save_regex = QtGui.QPushButton(u'Salvar', self)
+        btn_save_regex = QtWidgets.QPushButton('Salvar', self)
         btn_save_regex.resize(btn_save_regex.sizeHint())
         btn_save_regex.clicked.connect(self.signal_save_regex)
         vbox_center.addWidget(btn_save_regex)
 
-        load_regex_label = QtGui.QLabel()
-        load_regex_label.setText(u'Carregar nova Expressão Reg.')
+        load_regex_label = QtWidgets.QLabel()
+        load_regex_label.setText('Carregar nova Expressão Reg.')
         load_regex_label.setFont(self.subtitle_2_font)
         vbox_center.addWidget(load_regex_label)
 
-        self.regex_list = QtGui.QListWidget()
-        all_reg = all_regex.keys()
+        self.regex_list = QtWidgets.QListWidget()
+        all_reg = list(all_regex.keys())
         self.regex_list.addItems(all_reg)
         self.regex_list.itemClicked.connect(self.list_regex_clicked)
 
         vbox_center.addWidget(self.regex_list)
 
-        btn_load_regex = QtGui.QPushButton(u'Carregar', self)
+        btn_load_regex = QtWidgets.QPushButton('Carregar', self)
         btn_load_regex.resize(btn_load_regex.sizeHint())
         btn_load_regex.clicked.connect(self.signal_load_regex)
         vbox_center.addWidget(btn_load_regex)
@@ -867,28 +871,28 @@ class CreateRegexWidget(QtGui.QWidget):
     def refresh_regex_list(self):
         if os.path.isfile("db/regex.p"):
             all_regex = pickle.load( open( "db/regex.p", "rb" ) )
-            print all_regex.keys()
+            print(list(all_regex.keys()))
             self.regex_list.clear()
-            # self.regex_list = QtGui.QListWidget()
-            all_regex = all_regex.keys()
+            # self.regex_list = QtWidgets.QListWidget()
+            all_regex = list(all_regex.keys())
             self.regex_list.addItems(all_regex)
 
     """
         Ação de adicionar regra numa gramática regular
     """
     def signal_set_regex(self):
-        print "tão"
+        print("tão")
         exp = str(self.Exp_textbox.text())
-        print exp
+        print(exp)
         aux = self.e.set_regex(exp)
         self.refresh_regex()
-        print aux
+        print(aux)
         # if aux == True:
         #     self.refresh_regex()
         # else:
         #     if aux:
         #         name = aux.decode("utf-8")
-        #         QtGui.QMessageBox.information(self, "Erro", name)
+        #         QtWidgets.QMessageBox.information(self, "Erro", name)
         # # newEntry2.delete(0, END)
         return
 
@@ -898,12 +902,12 @@ class CreateRegexWidget(QtGui.QWidget):
     """
     def signal_save_regex(self):
         filename = str(self.save_textbox.text())
-        print("Save Regex: " + str(filename))
+        print(("Save Regex: " + str(filename)))
         all_regex[filename] = [self.e.literal, self.e.E]
         pickle.dump(all_regex, open( "db/regex.p", "wb" ))
         self.refresh_regex_list()
-        QtGui.QMessageBox.information(self, u'Salvando', u'Sua exp. regular \''+ filename.decode("utf-8")  + u'\' foi salva com sucesso')
-        QtGui.QMessageBox.information(self, u'Dica', u'Acesse novamente a tela inicial e selecione sua Expressão para manipulações')
+        QtWidgets.QMessageBox.information(self, 'Salvando', 'Sua exp. regular \''+ filename.decode("utf-8")  + '\' foi salva com sucesso')
+        QtWidgets.QMessageBox.information(self, 'Dica', 'Acesse novamente a tela inicial e selecione sua Expressão para manipulações')
         # filenameEntry.delete(0, END)
         return
 
@@ -923,12 +927,12 @@ class CreateRegexWidget(QtGui.QWidget):
 
     def list_regex_clicked(self,item):
         pass
-        # QtGui.QMessageBox.information(self, "ListWidget", "You clicked: "+item.text())
+        # QtWidgets.QMessageBox.information(self, "ListWidget", "You clicked: "+item.text())
 
 
 
 def main():
-    app = QtGui.QApplication(sys.argv)
+    app = QtWidgets.QApplication(sys.argv)
     w = ApplicationWidget()
     w.showMaximized()
     app.exec_()
