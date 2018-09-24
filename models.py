@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*
+
 from binary_tree import *
 from string import ascii_uppercase
 import copy
@@ -118,14 +118,14 @@ class RegGram:
         Remove uma produção A
     """
     def remove_production(self, A):
-        if self.G.has_key(A):
+        if A in self.G:
             del self.G[A]
 
     """
         Remove uma regra de produção A -> B
     """
     def remove_rule(self, A, B):
-        if self.G.has_key(A):
+        if A in self.G:
             if B in self.G[A]:
                 self.G[A].remove(B)
 
@@ -185,7 +185,7 @@ class RegGram:
         state = self.initial_state
         final_sentences = []
         sentences = []
-        print(self.initial_state)
+        print((self.initial_state))
         for seq in self.G[state]:
             if self.is_lower(seq):
                 if (len(seq) == len(input)):
@@ -211,7 +211,7 @@ class RegGram:
 
     # Prints the Grammar
     def show(self):
-        print(self.G)
+        print((self.G))
 
     """
         Retorna um dicionário com símbolos terminais e não terminais
@@ -291,7 +291,7 @@ class RegGram:
                 rules += str(rule) + " | "
             rules = rules[0:-3]
             lines += (str(g.initial_state) + " --> " + rules + "\n")
-            for production in g.G.keys():
+            for production in list(g.G.keys()):
                 if production != g.initial_state:
                     rules = ""
                     for rule in g.G[production]:
@@ -405,15 +405,15 @@ class Regex:
         if self.is_dictionary(current):
             node.value = self.get_operator(current)
             if node.value == "|":
-                node.left = self.get_node(current.values()[0][0], node)
-                if len(current.values()[0]) == 2:
-                    node.right = self.get_node(current.values()[0][1], node)
+                node.left = self.get_node(list(current.values())[0][0], node)
+                if len(list(current.values())[0]) == 2:
+                    node.right = self.get_node(list(current.values())[0][1], node)
                 else:
-                    del current.values()[0][0]
+                    del list(current.values())[0][0]
                     node.right = self.get_node(current, node)
 
             else:
-                node.left = self.get_node(current.values()[0], node)
+                node.left = self.get_node(list(current.values())[0], node)
         elif len(current) > 1:
             node.value = "."
             node.left = self.get_node(current[0], node)
@@ -441,7 +441,7 @@ class Regex:
     """
     def get_operator(self, c):
         if self.is_dictionary(c):
-            return c.keys()[0]
+            return list(c.keys())[0]
 
     """
         Função auxiliar que imprime na tela a árvore binária
@@ -625,9 +625,9 @@ class Regex:
                         if node.value == symbol:
                             self.tree_move_up(node, state_name, tree)
                     state_result = tree.composing_states[state_name]
-                    if (tree.composing_states.values().count(state_result) > 1):
+                    if (list(tree.composing_states.values()).count(state_result) > 1):
                         del tree.composing_states[state_name]
-                        for key, value in tree.composing_states.items():
+                        for key, value in list(tree.composing_states.items()):
                             if value == state_result:
                                 automata.transitions[state][symbol] = key
                                 break
@@ -819,7 +819,7 @@ class FiniteAutomata:
                 dfa.transitions[state][symbol] = self.get_state_name(dfa, value)
 
         dfa.is_deterministic = True
-        dfa.K = dfa.transitions.keys()
+        dfa.K = list(dfa.transitions.keys())
 
         # F' = {p(K) | p(K) intersecction with F != empty state}
         for state in dfa.states:
@@ -833,7 +833,7 @@ class FiniteAutomata:
         estados compostos do autômato original
     """
     def get_state_name(self, dfa, search_value):
-        for key, value in dfa.states.items():
+        for key, value in list(dfa.states.items()):
             if value == search_value:
                 return key
 
@@ -873,7 +873,7 @@ class FiniteAutomata:
                     reachable.append(new_state)
                     if new_state not in new_reachable_states:
                         new_reachable_states.append(new_state)
-        for transition in self.transitions.keys():
+        for transition in list(self.transitions.keys()):
             if transition not in reachable:
                 del self.transitions[transition]
                 del self.states[transition]
@@ -902,7 +902,7 @@ class FiniteAutomata:
                             if state not in new_alive_states:
                                 new_alive_states.append(state)
                             break
-        for transition in self.transitions.keys():
+        for transition in list(self.transitions.keys()):
             if transition not in alive:
                 del self.transitions[transition]
                 del self.states[transition]
@@ -951,7 +951,7 @@ class FiniteAutomata:
                     transition[symbol] = self.transitions[state][symbol]
                     next_combination[symbol] = self.get_equivalent_class_of_state(transition[symbol], last_equivalent_classes)
 
-                if next_combination in combinations.values():
+                if next_combination in list(combinations.values()):
                     for c in combinations:
                         if next_combination == combinations[c]:
                             if state not in new_equivalent_classes[c]:
@@ -990,10 +990,10 @@ class FiniteAutomata:
 
         for eq_class in final_classes:
             new_fa.states[eq_class] = final_classes[eq_class]
-        new_fa.K = new_fa.states.keys()
+        new_fa.K = list(new_fa.states.keys())
         new_fa.is_deterministic = True
         new_fa.sigma = self.sigma
-        for eq_class, states in new_fa.states.items():
+        for eq_class, states in list(new_fa.states.items()):
             if self.initial_state in states:
                 new_fa.initial_state = eq_class
 
@@ -1050,7 +1050,7 @@ class FiniteAutomata:
         antes da determinização
     """
     def get_name_of_state(self, transition):
-        for state in self.states.keys():
+        for state in list(self.states.keys()):
             if self.states[state] == transition:
                 return state
 
@@ -1065,7 +1065,7 @@ class FiniteAutomata:
         for i, state in enumerate(self.K):
             convertion[state] = ascii_uppercase[i]
             self.states[ascii_uppercase[i]] = state
-        self.K = convertion.values()
+        self.K = list(convertion.values())
         self.initial_state = convertion[self.initial_state]
         final_states = self.final_states
         self.final_states = []
@@ -1114,7 +1114,7 @@ class FiniteAutomata:
         acceptable = set()
         if size_left == 0:
             return acceptable
-        for symbol, transition in self.transitions[current_state].items():
+        for symbol, transition in list(self.transitions[current_state].items()):
             new_sentence = sentence + symbol
             if transition in self.final_states:
                 acceptable.add(new_sentence)

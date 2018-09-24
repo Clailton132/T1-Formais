@@ -1,10 +1,6 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 
-from finite_automata import FiniteAutomata
-from reg_gram import RegGram
-from regex import Regex
-
+from models import *
 import os, pprint, copy
 import pickle
 
@@ -361,7 +357,7 @@ class ApplicationWidget(QtWidgets.QWidget):
             self.initial_panel_label.setFont(self.item_font)
             self.initial_panel_label.setText('A partir desta Expressão Regular, você pode realizar a conversão para Autômato Finito na barra lateral à esquerda')
             self.table.hide()
-            self.regex_view.setText(str("Expressão Regular: " + self.e.literal + "\nEstrutura:" + str(self.e.E)).decode("utf-8"))
+            self.regex_view.setText(str("Expressão Regular: " + self.e.literal + "\nEstrutura:" + str(self.e.E)))
             self.regex_view.show()
             self.is_current_a_grammar = False
             # self.btnConvertToAutomata.setFont(self.item_font)
@@ -698,7 +694,7 @@ class CreateGrammarWidget(QtWidgets.QWidget):
 
         else:
             if aux:
-                name = aux.decode("utf-8")
+                name = aux
                 QtWidgets.QMessageBox.information(self, "Erro", name)
         # newEntry2.delete(0, END)
         return
@@ -712,10 +708,6 @@ class CreateGrammarWidget(QtWidgets.QWidget):
         b = str(self.B_textbox.text())
         self.g.remove_rule(a,b)
         self.refresh_grammar()
-        # else:
-            # name = aux.decode("utf-8")
-            # QtWidgets.QMessageBox.information(self, "Erro", name)
-        # newEntry2.delete(0, END)
         return
 
     """
@@ -864,8 +856,8 @@ class CreateRegexWidget(QtWidgets.QWidget):
 
 
     def refresh_regex(self):
-        self.regex_literal_label.setText(str("Expressão Regular: " + self.e.literal).decode("utf-8"))
-        self.regex_e_label.setText(str("Estrutura: " + str(self.e.E)).decode("utf-8"))
+        self.regex_literal_label.setText(str("Expressão Regular: " + self.e.literal))
+        self.regex_e_label.setText(str("Estrutura: " + str(self.e.E)))
 
 
     def refresh_regex_list(self):
@@ -887,13 +879,6 @@ class CreateRegexWidget(QtWidgets.QWidget):
         aux = self.e.set_regex(exp)
         self.refresh_regex()
         print(aux)
-        # if aux == True:
-        #     self.refresh_regex()
-        # else:
-        #     if aux:
-        #         name = aux.decode("utf-8")
-        #         QtWidgets.QMessageBox.information(self, "Erro", name)
-        # # newEntry2.delete(0, END)
         return
 
 
@@ -906,7 +891,7 @@ class CreateRegexWidget(QtWidgets.QWidget):
         all_regex[filename] = [self.e.literal, self.e.E]
         pickle.dump(all_regex, open( "db/regex.p", "wb" ))
         self.refresh_regex_list()
-        QtWidgets.QMessageBox.information(self, 'Salvando', 'Sua exp. regular \''+ filename.decode("utf-8")  + '\' foi salva com sucesso')
+        QtWidgets.QMessageBox.information(self, 'Salvando', 'Sua exp. regular \''+ filename  + '\' foi salva com sucesso')
         QtWidgets.QMessageBox.information(self, 'Dica', 'Acesse novamente a tela inicial e selecione sua Expressão para manipulações')
         # filenameEntry.delete(0, END)
         return
