@@ -328,24 +328,24 @@ class ApplicationWidget(QtWidgets.QWidget):
             self.table.resizeRowsToContents()
 
     def get_grammar_from_list(self):
-        filename = str(self.grammar_list.currentItem().text())
-        if os.path.isfile("db/reg_gram.p"):
-            all_reg_grammars = pickle.load(open( "db/reg_gram.p", "rb" ))
-            [self.g.initial_state, self.g.G] = all_reg_grammars[filename]
-            self.grammar_label.show()
-            self.grammar_label.setText('Gramática Regular: ' + str(filename))
-            self.initial_panel_label.setFont(self.item_font)
-            self.initial_panel_label.setText('A partir desta Gramática Regular, você pode realizar a conversão para Autômato Finito na barra lateral à esquerda')
-            self.regex_view.hide()
-            self.table.show()
-            self.is_current_a_grammar = True
-            # self.btnConvertToAutomata.setFont(self.item_font)
-            self.automatas = list()
-            self.automata_label.hide()
-            self.table_automata.hide()
-            self.table_generated.hide()
-            self.generated_sentences_label.hide()
-            self.refresh_grammar()
+        if self.grammar_list.currentItem(): # Se há algum item da lista selecionado
+            filename = str(self.grammar_list.currentItem().text())
+            if os.path.isfile("db/reg_gram.p"):
+                all_reg_grammars = pickle.load(open( "db/reg_gram.p", "rb" ))
+                [self.g.initial_state, self.g.G] = all_reg_grammars[filename]
+                self.grammar_label.show()
+                self.grammar_label.setText('Gramática Regular: ' + str(filename))
+                self.initial_panel_label.setFont(self.item_font)
+                self.initial_panel_label.setText('A partir desta Gramática Regular, você pode realizar a conversão para Autômato Finito na barra lateral à esquerda')
+                self.regex_view.hide()
+                self.table.show()
+                self.is_current_a_grammar = True
+                self.automatas = list()
+                self.automata_label.hide()
+                self.table_automata.hide()
+                self.table_generated.hide()
+                self.generated_sentences_label.hide()
+                self.refresh_grammar()
 
     def get_regex_from_list(self):
         if self.regex_list.currentItem():
