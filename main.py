@@ -83,6 +83,7 @@ class ApplicationWidget(QtWidgets.QWidget):
 
         self.btnGetGrammar = QtWidgets.QPushButton('Converter AF para GR', self)
         self.btnGetGrammar.resize(self.btnGetGrammar.sizeHint())
+        self.btnGetGrammar.clicked.connect(self.minimize_automata_signal)
         self.btnGetGrammar.clicked.connect(self.get_equivalent_reg_gram_signal)
         vbox_left.addWidget(self.btnGetGrammar)
 
