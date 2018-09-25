@@ -83,6 +83,8 @@ class ApplicationWidget(QtWidgets.QWidget):
 
         self.btnGetGrammar = QtWidgets.QPushButton('Converter AF para GR', self)
         self.btnGetGrammar.resize(self.btnGetGrammar.sizeHint())
+
+        # Minimizando o AF antes de gerar a gramática para prevenir crashes
         self.btnGetGrammar.clicked.connect(self.minimize_automata_signal)
         self.btnGetGrammar.clicked.connect(self.get_equivalent_reg_gram_signal)
         vbox_left.addWidget(self.btnGetGrammar)
@@ -383,23 +385,25 @@ class ApplicationWidget(QtWidgets.QWidget):
         print(automata.pretty_print())
 
     def determinize_automata_signal(self):
-        automata = self.automatas[-1].get_deterministic()
-        self.automatas.append(automata)
-        self.show_automata()
-        self.automata_label.setText("Autômato Finito Determinístico Equivalente")
-        self.automata_label.show()
-        self.table_automata.show()
-        print(automata.pretty_print())
-
-    def minimize_automata_signal(self):
-        if self.automatas[-1].is_deterministic:
-            automata = self.automatas[-1].get_minimized()
+        if len(self.automatas) > 0:
+            automata = self.automatas[-1].get_deterministic()
             self.automatas.append(automata)
             self.show_automata()
-            self.automata_label.setText("Autômato Finito Determinístico Mínimo Equivalente")
+            self.automata_label.setText("Autômato Finito Determinístico Equivalente")
             self.automata_label.show()
             self.table_automata.show()
             print(automata.pretty_print())
+
+    def minimize_automata_signal(self):
+        if len(self.automatas) > 0:
+            if self.automatas[-1].is_deterministic:
+                automata = self.automatas[-1].get_minimized()
+                self.automatas.append(automata)
+                self.show_automata()
+                self.automata_label.setText("Autômato Finito Determinístico Mínimo Equivalente")
+                self.automata_label.show()
+                self.table_automata.show()
+                print(automata.pretty_print())
 
     def show_automata(self):
         self.table_automata.setRowCount(0)
